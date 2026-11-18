@@ -428,7 +428,7 @@ async function load() {
   else $('#loading').hidden = false;
   try {
     if (QUEUE.length) await sync(true); // sinon la version du serveur effacerait les actions pas encore envoyées
-    if (!QUEUE.length) { setData(await run('getData')); if (cached) toast('À jour'); }
+    if (!QUEUE.length) { setData(await run('getData')); if (cached) toast('À jour'); probeUndoDrink(); }
     else toast(`Hors connexion · ${plural(QUEUE.length, 'action')} en attente`);
   } catch (e) { e.net && cached ? toast('Hors connexion · dernière version enregistrée') : fail(e); }
   $('#loading').hidden = true;
@@ -851,6 +851,16 @@ function inverseOf(d, fn, args) {
   return [];
 }
 
+// Le script sait-il annuler une dégustation (action « undoDrink », ajoutée dans une version plus récente du script) ?
+// Sonde sans effet : une dégustation fictive qui ne correspond à aucune ligne.
+let CAN_UNDO_DRINK = store.get('cave-undo-drink') === true;
+async function probeUndoDrink() {
+  if (CAN_UNDO_DRINK) return;
+  try { await run('undoDrink', { date: '0000-00-00', domaine: '\u0000sonde' }); CAN_UNDO_DRINK = true; }
+  catch (e) { if (e.net) return; CAN_UNDO_DRINK = !/Action inconnue/i.test(e.message); }
+  store.set('cave-undo-drink', CAN_UNDO_DRINK);
+}
+
 // File d'attente des actions faites sans réseau (gardée sur l'appareil, envoyée au retour du réseau)
 let QUEUE = store.get('cave-queue') || [], SYNCING = false;
 function saveQueue() { store.set('cave-queue', QUEUE); const b = $('#pending'); b.hidden = !QUEUE.length; $('#pending-n').textContent = QUEUE.length; }
@@ -892,7 +902,9 @@ async function perform(calls, msg, undoable = true) {
   btns.forEach(x => x.disabled = false);
   closeSheet();
   const text = queued ? `${msg} · en attente de réseau` : msg;
-  if (undoable && inverse.length) toastUndo(text, () => perform(inverse, 'Action annulée', false)); else toast(text);
+  // pas de bouton Annuler pour une bouteille ouverte tant que le script ne sait pas effacer une dégustation
+  const canUndo = undoable && inverse.length && (CAN_UNDO_DRINK || !inverse.some(([fn]) => fn === 'undoDrink'));
+  if (canUndo) toastUndo(text, () => perform(inverse, 'Action annulée', false)); else toast(text);
   return true;
 }
 const save = (fn, args, msg) => perform([[fn, args]], msg);
