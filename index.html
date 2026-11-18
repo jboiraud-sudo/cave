@@ -4,97 +4,250 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ma cave à vin</title>
+<meta name="theme-color" content="#5e1120">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<meta name="theme-color" content="#7b1e2b">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600&display=swap">
 <style>
+/* Ambiance « Étiquette » : papier ivoire, bordeaux profond, filets dorés, titres à empattements. */
 :root{
-  --bg:#f6f1ec; --card:#fff; --ink:#2a1f1d; --muted:#7d6c67; --line:#e7ddd5;
-  --accent:#7b1e2b; --accent-soft:#f3e3e3; --ok:#2f7a4d;
-  --rouge:#8e1b2c; --blanc:#d8b24a; --rose:#e48aa0; --champ:#b9a35a; --autre:#8a7cb0;
+  --bg:#f6f0e4; --card:#fffcf6; --ink:#2b1a17; --muted:#7a665d; --line:#e3d5bf;
+  --accent:#6e1424; --accent-soft:#f3e4dc; --gold:#a07a2c; --gold-soft:#eadcba; --wash:#efe5d3;
+  --head1:#6e1424; --head2:#4a0c17; --head-ink:#fbf3e6; --head-gold:#e3c27c;
+  --c-rouge:#7a1a2c; --c-blanc:#c99a2e; --c-rose:#d9707f; --c-champagne:#9a7a1c; --c-autre:#6a5bb0;
+  --shadow:0 1px 2px rgba(70,35,20,.06),0 6px 18px rgba(70,35,20,.07);
+  --serif:"EB Garamond",Georgia,"Times New Roman",serif;
+  --sans:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
 }
 @media (prefers-color-scheme:dark){:root{
-  --bg:#171212; --card:#231b1a; --ink:#f2eae7; --muted:#a8968f; --line:#3a2e2c;
-  --accent:#d0566a; --accent-soft:#3a2426;
+  --bg:#191112; --card:#241a1b; --ink:#f2e8da; --muted:#b39f90; --line:#3b2c2a;
+  --accent:#d0566a; --accent-soft:#3a2224; --gold:#d4b36a; --gold-soft:#4a3c26; --wash:#2d2221;
+  --head1:#3c0c16; --head2:#24080d; --head-ink:#f6ebdc; --head-gold:#d9b86e;
+  --c-rouge:#d0566a; --c-blanc:#e0b84a; --c-rose:#f08aa0; --c-champagne:#b89030; --c-autre:#9a8ae0;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25);
 }}
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-header{position:sticky;top:0;z-index:5;background:var(--accent);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
-header h1{margin:0;font-size:20px;font-weight:600}
-header button{background:none;border:0;color:#fff;font-size:22px;padding:4px 8px}
-main{padding:12px 16px 96px;max-width:720px;margin:0 auto}
-nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:5}
-nav button{flex:1;border:0;background:none;color:var(--muted);padding:10px 0 8px;font-size:12px;display:flex;flex-direction:column;align-items:center;gap:2px}
-nav button span{font-size:20px}
-nav button.on{color:var(--accent);font-weight:600}
-nav button.add span{width:44px;height:44px;margin-top:-18px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:400;box-shadow:0 2px 8px rgba(0,0,0,.25);border:3px solid var(--card)}
-.places{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.place{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:left;font:inherit;color:var(--ink);display:flex;flex-direction:column;gap:6px;cursor:pointer;min-width:0}
-.place .pl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
-.place .pn{font-size:22px;font-weight:700;line-height:1.1}
-.place .pn small{font-size:13px;font-weight:400;color:var(--muted)}
-.place .pc{font-size:12px;color:var(--muted);min-height:1.4em}
-.place .mix{display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--accent-soft)}
-.place .mix i{display:block;height:100%}
-.place.empty{background:none;border-style:dashed}
-.place.empty .pn{color:var(--muted);font-size:16px;font-weight:600}
-.zrow{display:contents}
-.back{border:0;background:none;color:var(--accent);font:inherit;font-weight:600;padding:6px 0;margin:-2px 0 4px}
-.ztitle{font-size:20px;font-weight:700;margin:2px 0}
-input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
-textarea{min-height:70px;resize:vertical}
-label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+html,svg text{font-variant-numeric:lining-nums}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--sans);-webkit-tap-highlight-color:transparent}
+button{font:inherit;color:inherit;cursor:pointer}
+.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+
+/* En-tête */
+header{position:sticky;top:0;z-index:5;background:linear-gradient(160deg,var(--head1),var(--head2));color:var(--head-ink);padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--head-gold)}
+header h1{margin:0;font:600 26px/1 var(--serif);letter-spacing:.01em}
+header .sub{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--head-gold);margin-top:4px}
+header .acts{display:flex;gap:2px}
+header .acts button{background:none;border:0;color:var(--head-ink);padding:8px;border-radius:50%;display:flex}
+header .acts button:active{background:rgba(255,255,255,.12)}
+
+main{padding:14px 16px 110px;max-width:720px;margin:0 auto}
+h2{font:600 20px/1.2 var(--serif);margin:24px 0 10px}
+.view-title{font:600 24px/1.15 var(--serif);margin:4px 0 12px}
+
+/* Champs */
+input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 12px;outline:none;transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft)}
+textarea{min-height:76px;resize:vertical}
+label{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:14px 0 5px}
 .row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
-.btn{display:block;width:100%;border:0;border-radius:12px;padding:13px;font:inherit;font-weight:600;background:var(--accent);color:#fff;margin-top:14px}
-.btn.ghost{background:var(--accent-soft);color:var(--accent)}
+.search{position:relative}
+.search .ic{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);width:18px;height:18px}
+.search input{padding-left:38px;border-radius:999px}
+
+/* Boutons */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:0;border-radius:12px;padding:14px;font-weight:600;background:var(--accent);color:#fff;margin-top:12px;box-shadow:var(--shadow);transition:transform .1s,opacity .15s}
+.btn:active{transform:scale(.98)}
+.btn.ghost{background:var(--card);color:var(--accent);border:1px solid var(--line);box-shadow:none}
 .btn:disabled{opacity:.5}
-.chips{display:flex;gap:8px;overflow-x:auto;padding:10px 0 4px;scrollbar-width:none}
-.chip{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:14px}
+.btn .ic{width:20px;height:20px}
+
+/* Filtres */
+.chips{display:flex;gap:8px;overflow-x:auto;padding:12px 0 4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:6px 13px;font-size:14px;transition:background .15s,color .15s,border-color .15s}
 .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
-.summary{color:var(--muted);font-size:14px;margin:8px 0}
-.group{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:18px 0 6px}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start}
-.card.tap{cursor:pointer}
-.dot{flex:none;width:12px;height:12px;border-radius:50%;margin-top:5px;background:var(--autre)}
-.dot.rouge{background:var(--rouge)}.dot.blanc{background:var(--blanc)}.dot.rose{background:var(--rose)}.dot.champagne{background:var(--champ)}
+.chip .sw{width:9px;height:9px;border-radius:50%;background:var(--c)}
+.filters{display:flex;gap:8px;margin-top:8px}.filters>*{flex:1;min-width:0}
+.filters select{padding:8px 10px;font-size:14px;border-radius:999px}
+.summary{color:var(--muted);font-size:13px;margin:12px 0 4px;font-variant-numeric:lining-nums tabular-nums}
+
+/* Séparateur façon étiquette */
+.group{display:flex;align-items:center;gap:10px;font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:20px 0 10px}
+.group::before,.group::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--gold-soft) 30%,var(--gold-soft) 70%,transparent)}
+
+/* Couleurs de vin */
+.k-rouge{--c:var(--c-rouge)}.k-blanc{--c:var(--c-blanc)}.k-rose{--c:var(--c-rose)}.k-champagne{--c:var(--c-champagne)}.k-autre{--c:var(--c-autre)}
+
+/* Cartes vin */
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px 12px 10px;margin-bottom:8px;display:flex;gap:10px;align-items:center;box-shadow:var(--shadow)}
+.card.tap{cursor:pointer;transition:transform .12s}
+.card.tap:active{transform:scale(.985)}
+.btl{width:16px;height:40px;flex:none;color:var(--c)}
 .grow{flex:1;min-width:0}
-.t{font-weight:600}
-.s{color:var(--muted);font-size:14px}
-.badge{flex:none;font-weight:700;font-size:14px;background:var(--accent-soft);color:var(--accent);border-radius:8px;padding:2px 8px}
-.tag{display:inline-block;font-size:12px;border-radius:6px;padding:1px 6px;background:var(--accent-soft);color:var(--accent);margin-right:4px}
-.empty{text-align:center;color:var(--muted);padding:40px 0}
-.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
-.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
-.kpi b{display:block;font-size:24px}
-.kpi span{font-size:13px;color:var(--muted)}
-.bar{display:flex;align-items:center;gap:8px;font-size:14px;margin:6px 0}
-.bar .l{width:42%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bar .track{flex:1;height:10px;background:var(--accent-soft);border-radius:5px;overflow:hidden}
-.bar .fill{height:100%;background:var(--accent)}
-.bar .n{width:28px;text-align:right;font-weight:600}
-h2{font-size:17px;margin:20px 0 8px}
+.dom{font:600 17.5px/1.2 var(--serif);overflow-wrap:anywhere}
+.app{font-size:14px;margin-top:2px}
+.app i{font-family:var(--serif);font-size:14.5px;color:var(--muted)}
+.meta{font-size:12px;color:var(--muted);margin-top:2px}
+.vint{flex:none;text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.vint b{font:600 19px/1 var(--serif);color:var(--gold);font-variant-numeric:lining-nums}
+.vint span{font-size:12px;font-weight:600;color:var(--muted);font-variant-numeric:lining-nums tabular-nums}
+
+.empty{text-align:center;color:var(--muted);padding:36px 10px}
+.empty .ic{width:40px;height:40px;color:var(--gold);stroke-width:1.3;display:block;margin:0 auto 8px}
+.empty b{display:block;font:600 18px var(--serif);color:var(--ink);margin-bottom:4px}
+
+/* Casier */
+.places{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.place{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:left;display:flex;flex-direction:column;gap:8px;min-width:0;box-shadow:var(--shadow);transition:transform .12s}
+.place:active{transform:scale(.98)}
+.place .ph{display:flex;align-items:baseline;justify-content:space-between;gap:6px}
+.place .zn{font:600 18px/1 var(--serif)}
+.place .zc{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.place .pc{font-size:12px;color:var(--muted);font-variant-numeric:lining-nums tabular-nums}
+.place .pc b{color:var(--ink);font-weight:600}
+.place.vide{background:transparent;border-style:dashed;box-shadow:none}
+.rack{display:flex;flex-wrap:wrap;gap:4px;padding:8px;border-radius:8px;background:var(--wash);box-shadow:inset 0 1px 3px rgba(0,0,0,.08);min-height:40px;align-content:flex-start}
+.rack.big{gap:6px;padding:12px;--s:24px;margin:4px 0 6px}
+.cul{width:var(--s,15px);height:var(--s,15px);border-radius:50%;flex:none;
+  background:radial-gradient(circle,rgba(0,0,0,.32) 0 20%,transparent 23%),radial-gradient(circle at 32% 28%,rgba(255,255,255,.5) 0 9%,transparent 12%),var(--c);
+  box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.25),0 1px 1px rgba(0,0,0,.12);animation:pop .35s both;animation-delay:calc(var(--i,0) * 18ms)}
+.cul.libre{background:none;box-shadow:inset 0 0 0 1.5px var(--line);animation:none}
+.legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:13px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:5px}
+.legend i{width:9px;height:9px;border-radius:50%;background:var(--c)}
+.back{display:inline-flex;align-items:center;gap:4px;border:0;background:none;color:var(--accent);font-weight:600;padding:6px 0;margin:-4px 0 2px}
+.back .ic{width:18px;height:18px}
+
+/* Fiche vin : une étiquette */
+.label{position:relative;background:var(--card);border:1px solid var(--line);border-radius:10px;text-align:center;padding:26px 18px 20px;box-shadow:var(--shadow);overflow:hidden}
+.label::before{content:"";position:absolute;inset:7px;border:1px solid var(--gold-soft);border-radius:6px;pointer-events:none}
+.label::after{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:var(--c)}
+.lab-reg{font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--gold)}
+.lab-dom{font:700 25px/1.15 var(--serif);margin:10px 0 6px;text-wrap:balance}
+.lab-app{font-size:15px}
+.lab-cuv{font:italic 500 17px/1.3 var(--serif);color:var(--muted);margin-top:2px}
+.lab-vint{font:600 38px/1 var(--serif);color:var(--gold);margin-top:14px;letter-spacing:.02em}
+.lab-orn{width:60px;height:1px;background:var(--gold-soft);margin:12px auto 0}
+.facts{display:flex;gap:8px;margin-top:10px}
+.facts div{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--wash);border-radius:10px;padding:10px 6px;font-size:14px;font-weight:500}
+.facts .ic{width:18px;height:18px;color:var(--gold)}
+
+/* Volet du bas */
 .sheet{position:fixed;inset:0;z-index:10}
-.sheet-bg{position:absolute;inset:0;background:rgba(0,0,0,.45)}
-.sheet-panel{position:absolute;left:0;right:0;bottom:0;max-height:90vh;overflow:auto;background:var(--bg);border-radius:18px 18px 0 0;padding:8px 16px calc(20px + env(safe-area-inset-bottom));max-width:720px;margin:0 auto}
-.grip{width:40px;height:4px;border-radius:2px;background:var(--line);margin:4px auto 10px}
-.seg{display:flex;gap:6px}.seg button{flex:1;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:9px 4px;font:inherit;font-size:14px}
+.sheet-bg{position:absolute;inset:0;background:rgba(20,8,8,.5);opacity:0;transition:opacity .25s}
+.sheet-panel{position:absolute;left:0;right:0;bottom:0;max-height:92vh;overflow:auto;background:var(--bg);border-radius:20px 20px 0 0;padding:6px 16px calc(22px + env(safe-area-inset-bottom));max-width:720px;margin:0 auto;transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1)}
+.sheet.open .sheet-bg{opacity:1}
+.sheet.open .sheet-panel{transform:none}
+.grip{width:40px;height:4px;border-radius:2px;background:var(--line);margin:6px auto 12px}
+.sheet h2{margin-top:4px}
+.sheet .sub{font:italic 500 15.5px var(--serif);color:var(--muted);margin-top:-6px}
+.seg{display:flex;gap:6px}
+.seg button{flex:1;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 4px;font-size:14px;transition:background .15s,color .15s}
 .seg button.on{background:var(--accent);border-color:var(--accent);color:#fff}
-#toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:#2a1f1d;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20;max-width:90vw}
-#toast.show{opacity:1}
-#loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:30;color:var(--muted)}
+
+/* Bues */
+.note{flex:none;width:52px;height:52px;border-radius:50%;border:1.5px solid var(--gold);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1}
+.note b{font:600 17px var(--serif)}
+.note span{font-size:9px;color:var(--muted);margin-top:1px}
+.date{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:600}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.tag{display:inline-flex;align-items:center;gap:4px;font-size:12px;border-radius:999px;padding:2px 9px;background:var(--wash);color:var(--ink)}
+.tag .ic{width:14px;height:14px}
+.quote{font:italic 500 15.5px/1.4 var(--serif);color:var(--muted);margin-top:6px}
+
+/* Stats */
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow)}
+.kpi b{display:block;font:600 26px/1.15 var(--serif);font-variant-numeric:lining-nums}
+.kpi span{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow)}
+.donut-wrap{display:flex;align-items:center;gap:16px}
+.donut{width:140px;height:140px;flex:none}
+.donut circle.seg{transition:opacity .15s}
+.donut:hover circle.seg{opacity:.45}.donut circle.seg:hover{opacity:1}
+.donut .tot{font:600 30px var(--serif);fill:var(--ink)}
+.donut .tl{font:600 9px var(--sans);letter-spacing:.12em;fill:var(--muted)}
+.dleg{flex:1;min-width:0;display:flex;flex-direction:column;gap:7px;font-size:14px}
+.dleg div{display:flex;align-items:center;gap:8px}
+.dleg i{width:10px;height:10px;border-radius:50%;background:var(--c);flex:none}
+.dleg span{flex:1;min-width:0}
+.dleg b{font-variant-numeric:lining-nums tabular-nums;font-weight:600}
+.dleg em{font-style:normal;color:var(--muted);font-size:12px;width:34px;text-align:right;font-variant-numeric:lining-nums tabular-nums}
+.colchart{position:relative}
+.colchart svg{width:100%;height:auto;display:block;overflow:visible}
+.colchart .bar{fill:var(--accent);pointer-events:none}
+.colchart .hit{fill:transparent;cursor:pointer}
+.colchart .hit:hover+.bar,.colchart .bar.hl{fill:var(--gold)}
+.colchart .ax{font:500 9px var(--sans);fill:var(--muted);font-variant-numeric:lining-nums tabular-nums}
+.colchart .vl{font:600 11px var(--sans);fill:var(--ink)}
+.colchart .base{stroke:var(--line);stroke-width:1}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;padding:5px 8px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-100%);margin-top:-6px;opacity:0;transition:opacity .12s}
+.tip.on{opacity:1}
+.hbar{display:flex;align-items:center;gap:10px;font-size:14px;margin:8px 0}
+.hbar .l{width:44%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hbar .t{flex:1;height:8px;background:var(--wash);border-radius:4px;overflow:hidden}
+.hbar .f{height:100%;background:var(--accent);border-radius:0 4px 4px 0;transform-origin:left;animation:grow .6s cubic-bezier(.2,.8,.2,1) both}
+.hbar .n{width:26px;text-align:right;font-weight:600;font-variant-numeric:lining-nums tabular-nums}
+.note-s{font-size:12px;color:var(--muted);margin-top:8px}
+
+/* Barre d'onglets */
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;align-items:flex-end;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:5;box-shadow:0 -4px 16px rgba(70,35,20,.06)}
+nav button{flex:1;border:0;background:none;color:var(--muted);padding:9px 0 8px;font-size:11px;font-weight:500;display:flex;flex-direction:column;align-items:center;gap:3px;transition:color .15s}
+nav button.on{color:var(--accent)}
+nav button.on .ic{stroke-width:2}
+nav button.add .plus{width:54px;height:54px;margin-top:-26px;border-radius:50%;background:linear-gradient(160deg,var(--head1),var(--head2));color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 3px var(--card),0 0 0 4px var(--head-gold),0 6px 14px rgba(70,20,20,.3);transition:transform .15s}
+nav button.add:active .plus{transform:scale(.94)}
+nav button.add .plus .ic{width:26px;height:26px;stroke-width:2.2}
+
+#toast{position:fixed;left:50%;bottom:96px;transform:translate(-50%,12px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:20;max-width:90vw}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#loading{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:var(--bg);z-index:30;color:var(--muted)}
+#loading b{font:600 30px var(--serif);color:var(--accent);animation:breathe 1.6s ease-in-out infinite}
+
+.enter{animation:rise .28s cubic-bezier(.2,.8,.2,1)}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes pop{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}
+@keyframes grow{from{transform:scaleX(0)}to{transform:none}}
+@keyframes breathe{50%{opacity:.55}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 [hidden]{display:none!important}
 </style>
 </head>
 <body>
-<header><h1>🍷 Ma cave</h1><div><button id="refresh" aria-label="Actualiser">↻</button><button id="settings" aria-label="Réglages">⚙️</button></div></header>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-bottle" viewBox="0 0 16 40"><path d="M6 1h4v10c0 1.6 4.5 3.3 4.5 8.5V37a2 2 0 0 1-2 2h-9a2 2 0 0 1-2-2V19.5C1.5 14.3 6 12.6 6 11z" fill="currentColor"/><rect x="3" y="23" width="10" height="8" rx="1" fill="#fff" opacity=".55"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1.2"/><circle cx="4.5" cy="12" r="1.2"/><circle cx="4.5" cy="18" r="1.2"/></symbol>
+  <symbol id="i-rack" viewBox="0 0 24 24"><rect x="3" y="3.5" width="18" height="17" rx="2"/><circle cx="8" cy="9" r="2.3"/><circle cx="16" cy="9" r="2.3"/><circle cx="8" cy="15.5" r="2.3"/><circle cx="16" cy="15.5" r="2.3"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-glass" viewBox="0 0 24 24"><path d="M7 3h10c.4 4.5-.6 8.5-5 9.5C7.6 11.5 6.6 7.5 7 3zM12 12.5V20M8 21h8M7.4 7.5h9.2"/></symbol>
+  <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20h16M7 16v-5M12 16V6M17 16v-8"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7"/></symbol>
+  <symbol id="i-cart" viewBox="0 0 24 24"><path d="M3 4h2.5l2.2 10.5h10.6L20.5 8H7"/><circle cx="9" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+</svg>
+
+<header>
+  <div><h1>Ma cave</h1><div class="sub" id="head-sub">&nbsp;</div></div>
+  <div class="acts">
+    <button id="refresh" aria-label="Actualiser"><svg class="ic"><use href="#i-refresh"/></svg></button>
+    <button id="settings" aria-label="Réglages"><svg class="ic"><use href="#i-gear"/></svg></button>
+  </div>
+</header>
 
 <div id="setup" hidden>
   <main>
-    <h2>Connexion à ta feuille</h2>
-    <p class="s">À faire une seule fois sur cet appareil. Colle l'adresse de ton script Apps Script (elle finit par <b>/exec</b>) et ta clé secrète.</p>
-    <label>Adresse du script</label><input id="cfg-url" type="url" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off">
-    <label>Clé secrète</label><input id="cfg-key" type="text" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <div class="view-title">Connexion à ta feuille</div>
+    <p class="meta" style="font-size:14px">À faire une seule fois sur cet appareil. Colle l'adresse de ton script Apps Script (elle finit par <b>/exec</b>) et ta clé secrète.</p>
+    <label for="cfg-url">Adresse du script</label><input id="cfg-url" type="url" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off">
+    <label for="cfg-key">Clé secrète</label><input id="cfg-key" type="text" autocomplete="off" autocapitalize="off" spellcheck="false">
     <button class="btn" id="cfg-ok">Se connecter</button>
     <button class="btn ghost" id="cfg-cancel" hidden>Annuler</button>
   </main>
@@ -102,11 +255,11 @@ h2{font-size:17px;margin:20px 0 8px}
 
 <main>
   <section id="v-cave">
-    <input id="q" type="search" placeholder="Rechercher un domaine, une appellation…">
+    <div class="search"><svg class="ic"><use href="#i-search"/></svg><input id="q" type="search" placeholder="Domaine, appellation, cuvée…" aria-label="Rechercher"></div>
     <div class="chips" id="f-couleur"></div>
-    <div class="row">
-      <select id="f-region"><option value="">Toutes les régions</option></select>
-      <select id="f-zone"><option value="">Toutes les zones</option></select>
+    <div class="filters">
+      <select id="f-region" aria-label="Région"><option value="">Toutes les régions</option></select>
+      <select id="f-zone" aria-label="Zone"><option value="">Toutes les zones</option></select>
     </div>
     <div class="summary" id="cave-summary"></div>
     <div id="cave-list"></div>
@@ -115,11 +268,12 @@ h2{font-size:17px;margin:20px 0 8px}
   <section id="v-zones" hidden></section>
 
   <section id="v-add" hidden>
-    <h2>Ajouter des bouteilles</h2>
+    <div class="view-title">Ajouter des bouteilles</div>
     <div id="add-form"></div>
   </section>
 
   <section id="v-bues" hidden>
+    <div class="view-title">Bouteilles bues</div>
     <div class="summary" id="bues-summary"></div>
     <div id="bues-list"></div>
   </section>
@@ -128,16 +282,16 @@ h2{font-size:17px;margin:20px 0 8px}
 </main>
 
 <nav>
-  <button data-v="cave" class="on"><span>📋</span>Liste</button>
-  <button data-v="zones"><span>🗄️</span>Zones</button>
-  <button data-v="add" class="add"><span>+</span>Ajouter</button>
-  <button data-v="bues"><span>🥂</span>Bues</button>
-  <button data-v="stats"><span>📊</span>Stats</button>
+  <button data-v="cave" class="on"><svg class="ic"><use href="#i-list"/></svg>Liste</button>
+  <button data-v="zones"><svg class="ic"><use href="#i-rack"/></svg>Zones</button>
+  <button data-v="add" class="add"><span class="plus"><svg class="ic"><use href="#i-plus"/></svg></span>Ajouter</button>
+  <button data-v="bues"><svg class="ic"><use href="#i-glass"/></svg>Bues</button>
+  <button data-v="stats"><svg class="ic"><use href="#i-chart"/></svg>Stats</button>
 </nav>
 
 <div id="sheet" class="sheet" hidden><div class="sheet-bg"></div><div class="sheet-panel" id="sheet-panel"></div></div>
-<div id="toast"></div>
-<div id="loading">Chargement de la cave…</div>
+<div id="toast" role="status"></div>
+<div id="loading"><b>Ma cave</b><span>Ouverture de la cave…</span></div>
 
 <datalist id="dl-couleur"></datalist><datalist id="dl-region"></datalist>
 <datalist id="dl-domaine"></datalist><datalist id="dl-appellation"></datalist><datalist id="dl-cuvee"></datalist>
@@ -165,8 +319,16 @@ const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ
 const keyOf = b => [b.zone, b.cote, b.couleur, b.domaine, b.appellation, b.cuvee, b.millesime].join('|');
 const uniq = a => [...new Set(a.filter(Boolean))].sort((x, y) => x.localeCompare(y, 'fr'));
 const today = () => { const d = new Date(); return new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); };
-const frDate = s => s ? s.split('-').reverse().join('/') : '';
+const MOIS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+const frDate = s => { const p = String(s || '').split('-'); return p.length === 3 ? `${Number(p[2])} ${MOIS[Number(p[1]) - 1]} ${p[0]}` : esc(s); };
 const colorCls = c => { const n = norm(c); return n.startsWith('rouge') ? 'rouge' : n.startsWith('blanc') ? 'blanc' : n.startsWith('ros') ? 'rose' : n.startsWith('champ') ? 'champagne' : ''; };
+const kind = b => colorCls(b.couleur) || 'autre';
+const KORDER = ['rouge', 'blanc', 'rose', 'champagne', 'autre'];
+const KNAME = { rouge: ['rouge', 'rouges'], blanc: ['blanc', 'blancs'], rose: ['rosé', 'rosés'], champagne: ['champagne', 'champagnes'], autre: ['autre', 'autres'] };
+const plural = (n, w, ws) => `${n} ${n > 1 ? (ws || w + 's') : w}`;
+const icon = (id, cls) => `<svg class="ic${cls ? ' ' + cls : ''}"><use href="#i-${id}"/></svg>`;
+const bottleIcon = k => `<svg class="btl k-${k}" viewBox="0 0 16 40" aria-hidden="true"><use href="#i-bottle"/></svg>`;
+const fmtNote = n => String(n).replace('.', ',');
 
 let D = { bottles: [], drunk: [] };
 const F = { q: '', couleur: '', region: '', zone: '' };
@@ -179,7 +341,7 @@ async function load() {
   const cached = store.get('cave-data');
   if (cached) { setData(cached); $('#loading').hidden = true; toast('Mise à jour…'); }
   else $('#loading').hidden = false;
-  try { setData(await run('getData')); if (cached) toast('À jour ✓'); } catch (e) { fail(e); }
+  try { setData(await run('getData')); if (cached) toast('À jour'); } catch (e) { fail(e); }
   $('#loading').hidden = true;
 }
 
@@ -202,7 +364,7 @@ $('#cfg-ok').onclick = async () => {
   const b = $('#cfg-ok'); b.disabled = true; b.textContent = 'Connexion…';
   try {
     const d = await call(cfg, 'getData', []);
-    CFG = cfg; store.set('cave-cfg', cfg); hideSetup(); setData(d); toast('Connecté ✓');
+    CFG = cfg; store.set('cave-cfg', cfg); hideSetup(); setData(d); toast('Connecté');
   } catch (e) { fail(e); }
   b.disabled = false; b.textContent = 'Se connecter';
 };
@@ -220,10 +382,13 @@ function setData(d) {
   fill('#dl-appellation', uniq(B.map(b => b.appellation).concat(D.drunk.map(b => b.appellation))));
   fill('#dl-cuvee', uniq(B.map(b => b.cuvee)));
 
+  const total = B.reduce((s, b) => s + b.nb, 0);
+  $('#head-sub').textContent = `${plural(total, 'bouteille')} · ${plural(new Set(B.map(b => b.domaine)).size, 'domaine')}`;
+
   const couleurs = uniq(B.map(b => b.couleur));
   if (F.couleur && !couleurs.includes(F.couleur)) F.couleur = '';
   $('#f-couleur').innerHTML = ['', ...couleurs].map(c =>
-    `<button class="chip ${F.couleur === c ? 'on' : ''}" data-c="${esc(c)}">${c ? esc(c) : 'Toutes'}</button>`).join('');
+    `<button class="chip ${F.couleur === c ? 'on' : ''}${c ? ' k-' + kind({ couleur: c }) : ''}" data-c="${esc(c)}">${c ? '<i class="sw"></i>' + esc(c) : 'Toutes'}</button>`).join('');
 
   const setOpts = (id, first, vals, cur, label) => {
     $(id).innerHTML = `<option value="">${first}</option>` + vals.map(v => `<option value="${esc(v)}" ${v === cur ? 'selected' : ''}>${esc(label ? label(v) : v)}</option>`).join('');
@@ -235,7 +400,16 @@ function setData(d) {
   if (!$('#add-form').innerHTML) renderAdd();
 }
 
-/* ---------- Cave ---------- */
+/* ---------- Liste ---------- */
+function cardHtml(b) {
+  return `<div class="card tap" data-row="${b.row}">
+      ${bottleIcon(kind(b))}
+      <div class="grow"><div class="dom">${esc(b.domaine)}</div>
+        <div class="app">${esc(b.appellation)}${b.cuvee ? ` <i>· ${esc(b.cuvee)}</i>` : ''}</div>
+        <div class="meta">${esc(b.region)}</div></div>
+      <div class="vint"><b>${esc(b.millesime || 'NM')}</b><span>×${b.nb}</span></div></div>`;
+}
+
 function renderCave() {
   const q = norm(F.q).split(/\s+/).filter(Boolean);
   const list = D.bottles.filter(b =>
@@ -244,8 +418,8 @@ function renderCave() {
   ).sort((a, b) => (a.zone - b.zone) || (a.cote === b.cote ? 0 : a.cote === 'Avant' ? -1 : 1) || a.domaine.localeCompare(b.domaine, 'fr') || String(a.millesime).localeCompare(String(b.millesime)));
 
   const n = list.reduce((s, b) => s + b.nb, 0);
-  $('#cave-summary').textContent = `${n} bouteille${n > 1 ? 's' : ''} · ${list.length} référence${list.length > 1 ? 's' : ''}`;
-  if (!list.length) { $('#cave-list').innerHTML = '<div class="empty">Aucune bouteille ne correspond.</div>'; return; }
+  $('#cave-summary').textContent = `${plural(n, 'bouteille')} · ${plural(list.length, 'référence')}`;
+  if (!list.length) { $('#cave-list').innerHTML = `<div class="empty">${icon('search')}<b>Aucun vin trouvé</b>Essaie un autre mot ou retire un filtre.</div>`; return; }
 
   let html = '', grp = '';
   list.forEach(b => {
@@ -256,20 +430,10 @@ function renderCave() {
   $('#cave-list').innerHTML = html;
 }
 
-function cardHtml(b) {
-  return `<div class="card tap" data-row="${b.row}">
-      <div class="dot ${colorCls(b.couleur)}"></div>
-      <div class="grow"><div class="t">${esc(b.domaine)}</div>
-        <div class="s">${esc(b.appellation)}${b.cuvee ? ' — ' + esc(b.cuvee) : ''}</div>
-        <div class="s">${esc(b.millesime || 'NM')} · ${esc(b.region)}</div></div>
-      <div class="badge">×${b.nb}</div></div>`;
-}
-
-/* ---------- Zones ---------- */
+/* ---------- Zones (casier) ---------- */
 const ZONES = ['1', '2', '3', '4', '5'], COTES = ['Avant', 'Arrière'];
 let ZSEL = null; // emplacement ouvert : { zone, cote } ou null
 const sortBottles = (a, b) => a.domaine.localeCompare(b.domaine, 'fr') || String(a.millesime).localeCompare(String(b.millesime));
-const plural = (n, w) => `${n} ${w}${n > 1 ? 's' : ''}`;
 
 function places() {
   // Les 10 emplacements prévus, plus tout emplacement inattendu présent dans la feuille
@@ -278,6 +442,16 @@ function places() {
   D.bottles.forEach(b => { if (!list.some(p => p.zone === b.zone && p.cote === b.cote)) list.push({ zone: b.zone, cote: b.cote }); });
   return list.map(p => ({ ...p, bottles: D.bottles.filter(b => b.zone === p.zone && b.cote === p.cote) }));
 }
+function countBy(bottles) { const by = {}; bottles.forEach(b => { const k = kind(b); by[k] = (by[k] || 0) + b.nb; }); return by; }
+function rackHtml(bottles, big) {
+  const culs = [];
+  KORDER.forEach(k => bottles.filter(b => kind(b) === k).sort(sortBottles).forEach(b => { for (let i = 0; i < b.nb; i++) culs.push(k); }));
+  if (!culs.length) return `<div class="rack${big ? ' big' : ''}">${'<i class="cul libre"></i>'.repeat(big ? 8 : 6)}</div>`;
+  return `<div class="rack${big ? ' big' : ''}">${culs.map((k, i) => `<i class="cul k-${k}" style="--i:${i}"></i>`).join('')}</div>`;
+}
+function legendHtml(by) {
+  return KORDER.filter(k => by[k]).map(k => `<span class="k-${k}"><i></i>${plural(by[k], KNAME[k][0], KNAME[k][1])}</span>`).join('');
+}
 
 function renderZones() {
   if (ZSEL) return renderZone();
@@ -285,19 +459,13 @@ function renderZones() {
   const tot = P.reduce((s, p) => s + p.bottles.reduce((t, b) => t + b.nb, 0), 0);
   const vides = P.filter(p => !p.bottles.length).length;
   $('#v-zones').innerHTML = `
-    <div class="summary">${plural(tot, 'bouteille')} · ${vides ? plural(vides, 'emplacement') + ' vide' + (vides > 1 ? 's' : '') : 'aucun emplacement vide'}</div>
+    <div class="view-title">Le casier</div>
+    <div class="summary">${plural(tot, 'bouteille')} · ${vides ? plural(vides, 'emplacement vide', 'emplacements vides') : 'aucun emplacement vide'}</div>
     <div class="places">${P.map(p => {
       const n = p.bottles.reduce((s, b) => s + b.nb, 0);
-      const label = `Zone ${esc(p.zone)} · ${esc(p.cote)}`;
-      if (!n) return `<button class="place empty" data-z="${esc(p.zone)}" data-c="${esc(p.cote)}"><span class="pl">${label}</span><span class="pn">Vide</span><span class="pc">Place disponible</span></button>`;
-      const by = {}; p.bottles.forEach(b => { const k = colorCls(b.couleur) || 'autre'; by[k] = (by[k] || 0) + b.nb; });
-      const order = ['rouge', 'blanc', 'rose', 'champagne', 'autre'];
-      const names = { rouge: 'rouge', blanc: 'blanc', rose: 'rosé', champagne: 'champagne', autre: 'autre' };
-      const parts = order.filter(k => by[k]).map(k => `${by[k]} ${names[k]}${by[k] > 1 && k !== 'champagne' ? 's' : ''}`);
-      const bar = order.filter(k => by[k]).map(k => `<i class="dot ${k === 'autre' ? '' : k}" style="width:${by[k] / n * 100}%;margin:0;border-radius:0"></i>`).join('');
-      return `<button class="place" data-z="${esc(p.zone)}" data-c="${esc(p.cote)}"><span class="pl">${label}</span>
-        <span class="pn">${n} <small>bouteille${n > 1 ? 's' : ''}</small></span>
-        <span class="mix">${bar}</span><span class="pc">${parts.join(' · ')}</span></button>`;
+      const head = `<span class="ph"><span class="zn">Zone ${esc(p.zone)}</span><span class="zc">${esc(p.cote)}</span></span>`;
+      if (!n) return `<button class="place vide" data-z="${esc(p.zone)}" data-c="${esc(p.cote)}">${head}${rackHtml([])}<span class="pc">Vide · place disponible</span></button>`;
+      return `<button class="place" data-z="${esc(p.zone)}" data-c="${esc(p.cote)}">${head}${rackHtml(p.bottles)}<span class="pc"><b>${plural(n, 'bouteille')}</b></span></button>`;
     }).join('')}</div>`;
 }
 
@@ -306,19 +474,20 @@ function renderZone() {
   const list = D.bottles.filter(b => b.zone === zone && b.cote === cote).sort(sortBottles);
   const n = list.reduce((s, b) => s + b.nb, 0);
   $('#v-zones').innerHTML = `
-    <button class="back" id="z-back">← Zones</button>
-    <div class="ztitle">Zone ${esc(zone)} · ${esc(cote)}</div>
-    <div class="summary">${n ? plural(n, 'bouteille') + ' · ' + plural(list.length, 'référence') : 'Emplacement vide'}</div>
-    ${list.length ? list.map(cardHtml).join('') : '<div class="empty">Aucune bouteille ici pour l\'instant.</div>'}
-    <button class="btn ghost" id="z-add">+ Ajouter une bouteille ici</button>`;
+    <button class="back" id="z-back">${icon('back')}Le casier</button>
+    <div class="view-title">Zone ${esc(zone)} <span style="color:var(--gold)">·</span> ${esc(cote)}</div>
+    ${rackHtml(list, true)}
+    <div class="legend">${n ? legendHtml(countBy(list)) : 'Emplacement vide : place disponible.'}</div>
+    ${list.length ? `<div class="group">${plural(list.length, 'référence')} · ${plural(n, 'bouteille')}</div>` + list.map(cardHtml).join('') : ''}
+    <button class="btn ghost" id="z-add">${icon('plus')}Ajouter une bouteille ici</button>`;
 }
 
 function openZone(zone, cote) {
   ZSEL = { zone, cote };
   try { history.pushState({ zone: 1 }, ''); } catch (e) {}
-  renderZones(); window.scrollTo(0, 0);
+  renderZones(); animateIn($('#v-zones')); window.scrollTo(0, 0);
 }
-function closeZone() { ZSEL = null; renderZones(); window.scrollTo(0, 0); }
+function closeZone() { ZSEL = null; renderZones(); animateIn($('#v-zones')); window.scrollTo(0, 0); }
 
 $('#v-zones').onclick = e => {
   const p = e.target.closest('.place'); if (p) return openZone(p.dataset.z, p.dataset.c);
@@ -329,46 +498,65 @@ $('#v-zones').onclick = e => {
 // Bouton « retour » du téléphone : revient à la grille des zones au lieu de quitter l'app
 window.addEventListener('popstate', () => { if (ZSEL) closeZone(); });
 
-/* ---------- Fiche bouteille ---------- */
-function openSheet(html) { $('#sheet-panel').innerHTML = '<div class="grip"></div>' + html; $('#sheet').hidden = false; }
-function closeSheet() { $('#sheet').hidden = true; }
+/* ---------- Volet du bas ---------- */
+let sheetTimer;
+function openSheet(html) {
+  const s = $('#sheet'), p = $('#sheet-panel');
+  clearTimeout(sheetTimer);
+  p.innerHTML = '<div class="grip"></div>' + html;
+  if (s.hidden || !s.classList.contains('open')) {
+    s.hidden = false; void s.offsetWidth; s.classList.add('open');
+  } else { p.scrollTop = 0; animateIn(p); }
+}
+function closeSheet() {
+  const s = $('#sheet'); if (s.hidden) return;
+  s.classList.remove('open');
+  sheetTimer = setTimeout(() => { s.hidden = true; }, 300);
+}
 
 function showBottle(row) {
   const b = D.bottles.find(x => x.row === row); if (!b) return;
+  const k = kind(b);
   openSheet(`
-    <div class="card"><div class="dot ${colorCls(b.couleur)}"></div><div class="grow">
-      <div class="t">${esc(b.domaine)}</div>
-      <div>${esc(b.appellation)}${b.cuvee ? ' — ' + esc(b.cuvee) : ''}</div>
-      <div class="s">${esc(b.couleur)} · ${esc(b.region)} · ${esc(b.millesime || 'NM')}</div>
-      <div class="s">📍 Zone ${esc(b.zone)}, ${esc(b.cote.toLowerCase())}</div></div>
-      <div class="badge">×${b.nb}</div></div>
-    <button class="btn" id="b-drink">🍷 J'ouvre une bouteille</button>
-    <div class="row"><button class="btn ghost" id="b-plus">+1 bouteille</button><button class="btn ghost" id="b-edit">✏️ Modifier</button></div>`);
+    <div class="label k-${k}">
+      <div class="lab-reg">${esc(b.region)}${b.region && b.couleur ? ' · ' : ''}${esc(b.couleur)}</div>
+      <div class="lab-dom">${esc(b.domaine)}</div>
+      <div class="lab-app">${esc(b.appellation)}</div>
+      ${b.cuvee ? `<div class="lab-cuv">${esc(b.cuvee)}</div>` : ''}
+      <div class="lab-vint">${esc(b.millesime || 'NM')}</div>
+      <div class="lab-orn"></div>
+    </div>
+    <div class="facts">
+      <div>${icon('pin')}Zone ${esc(b.zone)} · ${esc(b.cote)}</div>
+      <div><svg class="btl k-${k}" viewBox="0 0 16 40" style="width:9px;height:22px" aria-hidden="true"><use href="#i-bottle"/></svg>${plural(b.nb, 'bouteille')}</div>
+    </div>
+    <button class="btn" id="b-drink">${icon('glass')}J'ouvre une bouteille</button>
+    <div class="row"><button class="btn ghost" id="b-plus">${icon('plus')}1 bouteille</button><button class="btn ghost" id="b-edit">${icon('edit')}Modifier</button></div>`);
   $('#b-drink').onclick = () => drinkForm(b);
   $('#b-plus').onclick = () => save('updateBottle', [b.row, keyOf(b), { ...b, nb: b.nb + 1 }], 'Bouteille ajoutée');
   $('#b-edit').onclick = () => {
     openSheet('<h2>Modifier</h2>' + wineForm(b, true));
-    bindWineForm($('#sheet-panel'), o => save('updateBottle', [b.row, keyOf(b), o], o.nb > 0 ? 'Modifié' : 'Supprimé de la cave'));
+    bindWineForm($('#sheet-panel'), o => save('updateBottle', [b.row, keyOf(b), o], o.nb > 0 ? 'Modifié' : 'Retiré de la cave'));
   };
 }
 
 function drinkForm(b) {
   openSheet(`<h2>Dégustation</h2>
-    <div class="s">${esc(b.domaine)} — ${esc(b.appellation)} ${esc(b.cuvee)} ${esc(b.millesime)}</div>
-    <div class="row"><div><label>Date</label><input type="date" id="d-date" value="${today()}"></div>
-      <div><label>Note /20</label><input type="number" id="d-note" min="0" max="20" step="0.5" inputmode="decimal" placeholder="ex. 16"></div></div>
+    <div class="sub">${esc(b.domaine)} · ${esc(b.appellation)} ${esc(b.cuvee)} ${esc(b.millesime)}</div>
+    <div class="row"><div><label for="d-date">Date</label><input type="date" id="d-date" value="${today()}"></div>
+      <div><label for="d-note">Note /20</label><input type="number" id="d-note" min="0" max="20" step="0.5" inputmode="decimal" placeholder="ex. 16"></div></div>
     <label>Stade d'évolution</label>
     <div class="seg" id="d-stade">${['Trop jeune', 'À point', 'Sur le déclin'].map(s => `<button type="button">${s}</button>`).join('')}</div>
     <label>À racheter ?</label>
     <div class="seg" id="d-rach"><button type="button">Oui</button><button type="button">Non</button></div>
-    <label>Commentaire</label><textarea id="d-com" placeholder="Accord, impressions…"></textarea>
-    <button class="btn" id="d-ok">Enregistrer et retirer de la cave</button>`);
+    <label for="d-com">Commentaire</label><textarea id="d-com" placeholder="Accord, impressions…"></textarea>
+    <button class="btn" id="d-ok">${icon('glass')}Enregistrer et retirer de la cave</button>`);
   const seg = id => { const el = $(id); el.onclick = e => { if (e.target.tagName !== 'BUTTON') return; const on = e.target.classList.contains('on'); el.querySelectorAll('button').forEach(x => x.classList.remove('on')); if (!on) e.target.classList.add('on'); }; return () => (el.querySelector('.on') || {}).textContent || ''; };
   const stade = seg('#d-stade'), rach = seg('#d-rach');
   $('#d-ok').onclick = () => {
     const note = $('#d-note').value;
     if (note !== '' && (note < 0 || note > 20)) return toast('La note doit être entre 0 et 20');
-    save('drinkBottle', [b.row, keyOf(b), { date: $('#d-date').value, note, stade: stade(), racheter: rach(), commentaire: $('#d-com').value.trim() }], 'Santé ! 🥂');
+    save('drinkBottle', [b.row, keyOf(b), { date: $('#d-date').value, note, stade: stade(), racheter: rach(), commentaire: $('#d-com').value.trim() }], 'Santé !');
   };
 }
 
@@ -383,20 +571,21 @@ async function save(fn, args, msg) {
 function wineForm(o, edit) {
   o = o || { zone: '1', cote: 'Avant', nb: 1 };
   const v = k => esc(o[k] ?? '');
+  const id = edit ? 'e' : 'a';
   return `<form class="wf" autocomplete="off">
-    <label>Domaine *</label><input name="domaine" list="dl-domaine" value="${v('domaine')}" required>
-    <label>Appellation</label><input name="appellation" list="dl-appellation" value="${v('appellation')}">
-    <label>Cuvée</label><input name="cuvee" list="dl-cuvee" value="${v('cuvee')}">
-    <div class="row"><div><label>Couleur</label><input name="couleur" list="dl-couleur" value="${v('couleur')}"></div>
-      <div><label>Millésime</label><input name="millesime" inputmode="numeric" maxlength="4" value="${v('millesime')}" placeholder="vide = NM"></div></div>
-    <label>Région</label><input name="region" list="dl-region" value="${v('region')}">
+    <label for="${id}-dom">Domaine *</label><input id="${id}-dom" name="domaine" list="dl-domaine" value="${v('domaine')}" required>
+    <label for="${id}-app">Appellation</label><input id="${id}-app" name="appellation" list="dl-appellation" value="${v('appellation')}">
+    <label for="${id}-cuv">Cuvée</label><input id="${id}-cuv" name="cuvee" list="dl-cuvee" value="${v('cuvee')}">
+    <div class="row"><div><label for="${id}-coul">Couleur</label><input id="${id}-coul" name="couleur" list="dl-couleur" value="${v('couleur')}"></div>
+      <div><label for="${id}-mil">Millésime</label><input id="${id}-mil" name="millesime" inputmode="numeric" maxlength="4" value="${v('millesime')}" placeholder="vide = NM"></div></div>
+    <label for="${id}-reg">Région</label><input id="${id}-reg" name="region" list="dl-region" value="${v('region')}">
     <div class="row">
-      <div><label>Zone</label><select name="zone">${[1, 2, 3, 4, 5].map(z => `<option ${String(o.zone) === String(z) ? 'selected' : ''}>${z}</option>`).join('')}</select></div>
-      <div><label>Côté</label><select name="cote">${['Avant', 'Arrière'].map(c => `<option ${o.cote === c ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
-      <div><label>Bouteilles</label><input name="nb" type="number" min="${edit ? 0 : 1}" inputmode="numeric" value="${v('nb')}"></div>
+      <div><label for="${id}-z">Zone</label><select id="${id}-z" name="zone">${[1, 2, 3, 4, 5].map(z => `<option ${String(o.zone) === String(z) ? 'selected' : ''}>${z}</option>`).join('')}</select></div>
+      <div><label for="${id}-c">Côté</label><select id="${id}-c" name="cote">${['Avant', 'Arrière'].map(c => `<option ${o.cote === c ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
+      <div><label for="${id}-nb">Bouteilles</label><input id="${id}-nb" name="nb" type="number" min="${edit ? 0 : 1}" inputmode="numeric" value="${v('nb')}"></div>
     </div>
-    ${edit ? '<div class="s" style="margin-top:6px">Mettre 0 bouteille retire ce vin de la cave (sans l\'ajouter aux bues).</div>' : ''}
-    <button class="btn" type="submit">${edit ? 'Enregistrer' : 'Ajouter à la cave'}</button></form>`;
+    ${edit ? '<div class="meta" style="margin-top:8px">Mettre 0 bouteille retire ce vin de la cave (sans l\'ajouter aux bues).</div>' : ''}
+    <button class="btn" type="submit">${edit ? 'Enregistrer' : icon('plus') + 'Ajouter à la cave'}</button></form>`;
 }
 
 function bindWineForm(root, onSubmit) {
@@ -417,60 +606,120 @@ function bindWineForm(root, onSubmit) {
 
 function renderAdd(prefill) {
   $('#add-form').innerHTML = wineForm(prefill || null, false);
-  bindWineForm($('#add-form'), o => save('addBottle', [o], `${o.nb} bouteille${o.nb > 1 ? 's' : ''} ajoutée${o.nb > 1 ? 's' : ''}`));
+  bindWineForm($('#add-form'), o => save('addBottle', [o], `${plural(o.nb, 'bouteille ajoutée', 'bouteilles ajoutées')}`));
 }
 
 /* ---------- Bues ---------- */
 function renderBues() {
   const l = D.drunk.slice().sort((a, b) => String(b.date).localeCompare(String(a.date)));
   const notes = l.filter(b => b.note !== '');
-  const avg = notes.length ? (notes.reduce((s, b) => s + b.note, 0) / notes.length).toFixed(1).replace('.', ',') : '–';
-  $('#bues-summary').textContent = `${l.length} bouteille${l.length > 1 ? 's' : ''} bue${l.length > 1 ? 's' : ''} · note moyenne ${avg}/20`;
-  $('#bues-list').innerHTML = l.length ? l.map(b => `<div class="card">
-      <div class="dot ${colorCls(b.couleur)}"></div>
-      <div class="grow"><div class="t">${esc(b.domaine)}</div>
-        <div class="s">${esc(b.appellation)}${b.cuvee ? ' — ' + esc(b.cuvee) : ''} · ${esc(b.millesime || 'NM')}</div>
-        <div class="s">${frDate(b.date)}</div>
-        <div style="margin-top:4px">${b.stade ? `<span class="tag">${esc(b.stade)}</span>` : ''}${b.racheter === 'Oui' ? '<span class="tag">🛒 À racheter</span>' : ''}</div>
-        ${b.commentaire ? `<div class="s" style="margin-top:4px">« ${esc(b.commentaire)} »</div>` : ''}</div>
-      ${b.note !== '' ? `<div class="badge">${String(b.note).replace('.', ',')}</div>` : ''}</div>`).join('')
-    : '<div class="empty">Pas encore de bouteille bue.<br>Ouvre une fiche dans la cave et touche « J\'ouvre une bouteille ».</div>';
+  const avg = notes.length ? fmtNote((notes.reduce((s, b) => s + b.note, 0) / notes.length).toFixed(1)) : '–';
+  $('#bues-summary').textContent = l.length ? `${plural(l.length, 'bouteille bue', 'bouteilles bues')} · note moyenne ${avg}/20` : '';
+  $('#bues-list').innerHTML = l.length ? l.map(b => `<div class="card" style="align-items:flex-start">
+      ${bottleIcon(kind(b))}
+      <div class="grow"><div class="date">${frDate(b.date)}</div>
+        <div class="dom">${esc(b.domaine)}</div>
+        <div class="app">${esc(b.appellation)}${b.cuvee ? ` <i>· ${esc(b.cuvee)}</i>` : ''} · ${esc(b.millesime || 'NM')}</div>
+        ${b.stade || b.racheter === 'Oui' ? `<div class="tags">${b.stade ? `<span class="tag">${icon('clock')}${esc(b.stade)}</span>` : ''}${b.racheter === 'Oui' ? `<span class="tag">${icon('cart')}À racheter</span>` : ''}</div>` : ''}
+        ${b.commentaire ? `<div class="quote">« ${esc(b.commentaire)} »</div>` : ''}</div>
+      ${b.note !== '' ? `<div class="note"><b>${fmtNote(b.note)}</b><span>/20</span></div>` : ''}</div>`).join('')
+    : `<div class="empty">${icon('glass')}<b>Pas encore de dégustation</b>Ouvre la fiche d'un vin et touche « J'ouvre une bouteille ».</div>`;
 }
 
 /* ---------- Stats ---------- */
-function bars(map) {
-  const e = Object.entries(map).sort((a, b) => b[1] - a[1]); const max = Math.max(1, ...e.map(x => x[1]));
-  return e.map(([k, n]) => `<div class="bar"><div class="l">${esc(k)}</div><div class="track"><div class="fill" style="width:${n / max * 100}%"></div></div><div class="n">${n}</div></div>`).join('');
-}
-function renderStats() {
-  const B = D.bottles, sum = f => B.reduce((m, b) => (m[f(b) || '—'] = (m[f(b) || '—'] || 0) + b.nb, m), {});
-  const total = B.reduce((s, b) => s + b.nb, 0);
-  const mills = B.map(b => Number(b.millesime)).filter(Boolean);
-  const notes = D.drunk.filter(b => b.note !== '');
-  const avg = notes.length ? (notes.reduce((s, b) => s + b.note, 0) / notes.length).toFixed(1).replace('.', ',') : '–';
-  const rach = D.drunk.filter(b => b.racheter === 'Oui');
-  $('#v-stats').innerHTML = `
-    <div class="kpis">
-      <div class="kpi"><b>${total}</b><span>bouteilles</span></div>
-      <div class="kpi"><b>${new Set(B.map(b => b.domaine)).size}</b><span>domaines</span></div>
-      <div class="kpi"><b>${mills.length ? Math.min(...mills) + '–' + Math.max(...mills) : '–'}</b><span>millésimes</span></div>
-      <div class="kpi"><b>${D.drunk.length} · ${avg}</b><span>bues · note moy.</span></div>
-    </div>
-    <h2>Par couleur</h2>${bars(sum(b => b.couleur))}
-    <h2>Par région</h2>${bars(sum(b => b.region))}
-    <h2>Par zone</h2>${bars(sum(b => 'Zone ' + b.zone))}
-    <h2>Par millésime</h2>${bars(sum(b => b.millesime || 'NM'))}
-    ${rach.length ? `<h2>🛒 À racheter</h2>${rach.map(b => `<div class="card"><div class="dot ${colorCls(b.couleur)}"></div><div class="grow"><div class="t">${esc(b.domaine)}</div><div class="s">${esc(b.appellation)} ${esc(b.cuvee)} ${esc(b.millesime)}</div></div></div>`).join('')}` : ''}`;
+function donutHtml(by, total) {
+  const R = 52, C = 2 * Math.PI * R, GAP = 2.5;
+  let off = 0, segs = '';
+  KORDER.filter(k => by[k]).forEach(k => {
+    const len = by[k] / total * C;
+    const vis = Math.max(len - GAP, 1);
+    segs += `<circle class="seg k-${k}" cx="70" cy="70" r="${R}" fill="none" stroke="var(--c)" stroke-width="20" stroke-dasharray="${vis} ${C - vis}" stroke-dashoffset="${-off}" transform="rotate(-90 70 70)"><title>${KNAME[k][1]} : ${by[k]}</title></circle>`;
+    off += len;
+  });
+  const leg = KORDER.filter(k => by[k]).map(k => `<div class="k-${k}"><i></i><span>${KNAME[k][1][0].toUpperCase() + KNAME[k][1].slice(1)}</span><b>${by[k]}</b><em>${Math.round(by[k] / total * 100)} %</em></div>`).join('');
+  return `<div class="donut-wrap"><svg class="donut" viewBox="0 0 140 140" role="img" aria-label="Répartition par couleur">${segs}
+    <text class="tot" x="70" y="76" text-anchor="middle">${total}</text><text class="tl" x="70" y="92" text-anchor="middle">BOUTEILLES</text></svg>
+    <div class="dleg">${leg}</div></div>`;
 }
 
-/* ---------- Événements ---------- */
+function colChartHtml(byYear) {
+  const years = Object.keys(byYear).map(Number);
+  if (!years.length) return '<div class="meta">Aucun millésime renseigné.</div>';
+  const min = Math.min(...years), max = Math.max(...years), cols = [];
+  for (let y = min; y <= max; y++) cols.push([y, byYear[y] || 0]);
+  const W = 340, H = 130, top = 16, base = H - 18, step = W / cols.length, bw = Math.max(3, Math.min(22, step - 2));
+  const peak = Math.max(...cols.map(c => c[1]));
+  const every = cols.length > 18 ? 3 : cols.length > 10 ? 2 : 1;
+  let out = `<line class="base" x1="0" x2="${W}" y1="${base + .5}" y2="${base + .5}"/>`;
+  cols.forEach(([y, n], i) => {
+    const x = i * step + (step - bw) / 2, h = n ? Math.max(3, n / peak * (base - top)) : 0, yy = base - h, r = Math.min(4, h, bw / 2);
+    out += `<rect class="hit" x="${i * step}" y="0" width="${step}" height="${H}" data-y="${y}" data-n="${n}"/>`;
+    out += n ? `<path class="bar" d="M${x},${base} V${yy + r} Q${x},${yy} ${x + r},${yy} H${x + bw - r} Q${x + bw},${yy} ${x + bw},${yy + r} V${base} Z"/>` : '<path class="bar"/>';
+    if (n === peak) out += `<text class="vl" x="${x + bw / 2}" y="${yy - 4}" text-anchor="middle">${n}</text>`;
+    if ((y - min) % every === 0 || y === max) out += `<text class="ax" x="${x + bw / 2}" y="${H - 4}" text-anchor="middle">${y}</text>`;
+  });
+  return `<div class="colchart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Bouteilles par millésime">${out}</svg><div class="tip"></div></div>`;
+}
+
+function renderStats() {
+  const B = D.bottles;
+  const total = B.reduce((s, b) => s + b.nb, 0);
+  const by = countBy(B);
+  const byYear = {}; let nm = 0;
+  B.forEach(b => { const y = Number(b.millesime); if (y) byYear[y] = (byYear[y] || 0) + b.nb; else nm += b.nb; });
+  const regions = {}; B.forEach(b => { const r = b.region || '—'; regions[r] = (regions[r] || 0) + b.nb; });
+  const reg = Object.entries(regions).sort((a, b) => b[1] - a[1]); const rmax = reg.length ? reg[0][1] : 1;
+  const years = Object.keys(byYear).map(Number);
+  const notes = D.drunk.filter(b => b.note !== '');
+  const avg = notes.length ? fmtNote((notes.reduce((s, b) => s + b.note, 0) / notes.length).toFixed(1)) : '–';
+  const rach = D.drunk.filter(b => b.racheter === 'Oui');
+
+  $('#v-stats').innerHTML = `
+    <div class="view-title">Statistiques</div>
+    <div class="kpis">
+      <div class="kpi"><b>${total}</b><span>bouteilles</span></div>
+      <div class="kpi"><b>${B.length}</b><span>références</span></div>
+      <div class="kpi"><b>${new Set(B.map(b => b.domaine)).size}</b><span>domaines</span></div>
+      <div class="kpi"><b>${years.length ? Math.min(...years) + '–' + String(Math.max(...years)).slice(2) : '–'}</b><span>millésimes</span></div>
+    </div>
+    <h2>Par couleur</h2><div class="panel">${total ? donutHtml(by, total) : '<div class="meta">Cave vide.</div>'}</div>
+    <h2>Par millésime</h2><div class="panel">${colChartHtml(byYear)}${nm ? `<div class="note-s">Plus ${plural(nm, 'bouteille')} sans millésime.</div>` : ''}<div class="note-s">Touche une colonne pour voir le détail.</div></div>
+    <h2>Par région</h2><div class="panel">${reg.map(([k, n], i) => `<div class="hbar"><div class="l">${esc(k)}</div><div class="t"><div class="f" style="width:${n / rmax * 100}%;animation-delay:${i * 30}ms"></div></div><div class="n">${n}</div></div>`).join('')}</div>
+    <h2>Dégustations</h2>
+    <div class="kpis"><div class="kpi"><b>${D.drunk.length}</b><span>bouteilles bues</span></div><div class="kpi"><b>${avg}</b><span>note moyenne /20</span></div></div>
+    ${rach.length ? `<h2>À racheter</h2>${rach.map(b => `<div class="card">${bottleIcon(kind(b))}<div class="grow"><div class="dom">${esc(b.domaine)}</div><div class="app">${esc(b.appellation)}${b.cuvee ? ` <i>· ${esc(b.cuvee)}</i>` : ''}</div></div><div class="vint"><b>${esc(b.millesime || 'NM')}</b></div></div>`).join('')}` : ''}`;
+}
+
+// Infobulle du graphique des millésimes (survol ou toucher)
+function colTip(e) {
+  const hit = e.target.closest && e.target.closest('.hit'); const chart = e.target.closest && e.target.closest('.colchart');
+  document.querySelectorAll('.colchart .bar.hl').forEach(x => x.classList.remove('hl'));
+  if (!chart) return;
+  const tip = chart.querySelector('.tip');
+  if (!hit) { tip.classList.remove('on'); return; }
+  const n = Number(hit.dataset.n);
+  hit.nextElementSibling.classList.add('hl');
+  const cr = chart.getBoundingClientRect(), hr = hit.getBoundingClientRect();
+  tip.textContent = `${hit.dataset.y} · ${n ? plural(n, 'bouteille') : 'aucune bouteille'}`;
+  tip.style.left = Math.min(Math.max(hr.left - cr.left + hr.width / 2, 50), cr.width - 50) + 'px';
+  const bar = hit.nextElementSibling.getBoundingClientRect();
+  tip.style.top = (n ? bar.top - cr.top : hr.bottom - cr.top - 20) + 'px';
+  tip.classList.add('on');
+}
+$('#v-stats').addEventListener('pointerover', colTip);
+$('#v-stats').addEventListener('click', colTip);
+$('#v-stats').addEventListener('pointerleave', () => document.querySelectorAll('.colchart .tip').forEach(t => t.classList.remove('on')));
+
+/* ---------- Navigation ---------- */
+function animateIn(el) { el.classList.remove('enter'); void el.offsetWidth; el.classList.add('enter'); }
 function showView(v) {
   document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x.dataset.v === v));
   ['cave', 'zones', 'add', 'bues', 'stats'].forEach(k => $('#v-' + k).hidden = k !== v);
+  animateIn($('#v-' + v));
   window.scrollTo(0, 0);
 }
 document.querySelectorAll('nav button').forEach(btn => btn.onclick = () => {
-  // Toucher « Zones » depuis une zone ouverte ramène à la grille
+  // Toucher « Zones » depuis une zone ouverte ramène au casier
   if (btn.dataset.v === 'zones' && ZSEL && !$('#v-zones').hidden) closeZone();
   showView(btn.dataset.v);
 });

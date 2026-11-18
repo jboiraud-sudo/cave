@@ -1,6 +1,7 @@
-// Service worker minimal : l'interface s'ouvre même hors connexion (les données viennent du cache de l'app).
-const CACHE = 'cave-v1';
+// Service worker : l'app s'ouvre même hors connexion (les données viennent du cache de l'app).
+const CACHE = 'cave-v2';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
+const FONTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
@@ -9,10 +10,19 @@ self.addEventListener('activate', e => {
   e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k))))
     .then(() => self.clients.claim()));
 });
-// Réseau d'abord (pour toujours avoir la dernière version), cache en secours.
 self.addEventListener('fetch', e => {
   const req = e.request;
-  if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
+  if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+  // Polices : cache d'abord (elles ne changent pas)
+  if (FONTS.includes(url.hostname)) {
+    e.respondWith(caches.match(req).then(r => r || fetch(req).then(res => {
+      const copy = res.clone(); caches.open(CACHE).then(c => c.put(req, copy)); return res;
+    })));
+    return;
+  }
+  if (url.origin !== location.origin) return;
+  // App : réseau d'abord (pour toujours avoir la dernière version), cache en secours
   e.respondWith(
     fetch(req).then(res => {
       const copy = res.clone();
