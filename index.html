@@ -242,6 +242,21 @@ nav button.add .plus .ic{width:26px;height:26px;stroke-width:2.2}
 
 #toast{position:fixed;left:50%;bottom:96px;transform:translate(-50%,12px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:20;max-width:90vw}
 #toast.show{opacity:1;transform:translate(-50%,0)}
+#toast.act{pointer-events:auto;display:flex;align-items:center;gap:12px;padding:8px 8px 8px 16px;width:max-content;max-width:calc(100vw - 32px);border-radius:18px}
+#toast.act span{min-width:0}
+#toast button{border:0;background:none;color:var(--head-gold);font-weight:600;font-size:14px;padding:6px 10px;border-radius:999px}
+#toast button:active{background:rgba(255,255,255,.12)}
+header .acts #pending{border-radius:999px;gap:5px;align-items:center;padding:6px 11px;background:rgba(255,255,255,.14);font-size:13px;font-weight:600}
+header .acts #pending .ic{width:18px;height:18px}
+/* Dégustations passées dans la fiche */
+.tasts{display:flex;flex-direction:column;gap:8px}
+.tast{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.tast .note{width:44px;height:44px}
+.tast .note b{font-size:15px}
+.tast .what{font-size:14px;margin-top:1px}
+.tast .what i{font-family:var(--serif);font-size:15px;color:var(--muted)}
+.tast .quote{font-size:14.5px;margin-top:4px}
+.tast .tags{margin-top:5px}
 #loading{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:var(--bg);z-index:30;color:var(--muted)}
 #loading b{font:600 30px var(--serif);color:var(--accent);animation:breathe 1.6s ease-in-out infinite}
 
@@ -270,6 +285,7 @@ nav button.add .plus .ic{width:26px;height:26px;stroke-width:2.2}
   <symbol id="i-cart" viewBox="0 0 24 24"><path d="M3 4h2.5l2.2 10.5h10.6L20.5 8H7"/><circle cx="9" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/></symbol>
   <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/></symbol>
   <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+  <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M3 3l18 18M8.5 6.6A6 6 0 0 1 18 10.3 4 4 0 0 1 20.3 17M17 18H7a4 4 0 0 1-1.5-7.7"/></symbol>
   <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
   <symbol id="i-move" viewBox="0 0 24 24"><path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/></symbol>
   <!-- REGIONS:START -->
@@ -293,6 +309,7 @@ nav button.add .plus .ic{width:26px;height:26px;stroke-width:2.2}
 <header>
   <div><h1>Ma cave</h1><div class="sub" id="head-sub">&nbsp;</div></div>
   <div class="acts">
+    <button id="pending" hidden aria-label="Actions en attente d'envoi : toucher pour réessayer"><svg class="ic"><use href="#i-cloud"/></svg><span id="pending-n">0</span></button>
     <button id="refresh" aria-label="Actualiser"><svg class="ic"><use href="#i-refresh"/></svg></button>
     <button id="settings" aria-label="Réglages"><svg class="ic"><use href="#i-gear"/></svg></button>
   </div>
@@ -364,9 +381,11 @@ const store = {
 let CFG = store.get('cave-cfg');
 async function call(cfg, action, args) {
   let r;
+  const netErr = () => Object.assign(new Error('Pas de connexion au script (réseau ou adresse incorrecte).'), { net: true });
+  if (navigator.onLine === false) throw netErr();
   try {
     r = await fetch(cfg.url, { method: 'POST', body: JSON.stringify({ key: cfg.key, action, args }) });
-  } catch (e) { throw new Error('Pas de connexion au script (réseau ou adresse incorrecte).'); }
+  } catch (e) { throw netErr(); }
   let j;
   try { j = await r.json(); } catch (e) { throw new Error('Réponse inattendue : vérifie l\'adresse et que le script est déployé pour « Tout le monde ».'); }
   if (!j.ok) throw new Error(j.error || 'Erreur inconnue');
@@ -392,7 +411,14 @@ const fmtNote = n => String(n).replace('.', ',');
 let D = { bottles: [], drunk: [] };
 const F = { q: '', couleur: '', region: '', sort: store.get('cave-sort') || 'region' };
 
-function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2600); }
+function toast(msg) { const t = $('#toast'); t.classList.remove('act'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2600); }
+function toastUndo(msg, onUndo) {
+  const t = $('#toast');
+  t.innerHTML = `<span>${esc(msg)}</span><button type="button" id="t-undo">Annuler</button>`;
+  t.classList.add('show', 'act'); clearTimeout(t._h);
+  t._h = setTimeout(() => t.classList.remove('show', 'act'), 6500);
+  $('#t-undo').onclick = () => { clearTimeout(t._h); t.classList.remove('show', 'act'); onUndo(); };
+}
 function fail(e) { toast('⚠️ ' + (e && e.message ? e.message : e)); }
 
 async function load() {
@@ -400,7 +426,11 @@ async function load() {
   const cached = store.get('cave-data');
   if (cached) { setData(cached); $('#loading').hidden = true; toast('Mise à jour…'); }
   else $('#loading').hidden = false;
-  try { setData(await run('getData')); if (cached) toast('À jour'); } catch (e) { fail(e); }
+  try {
+    if (QUEUE.length) await sync(true); // sinon la version du serveur effacerait les actions pas encore envoyées
+    if (!QUEUE.length) { setData(await run('getData')); if (cached) toast('À jour'); }
+    else toast(`Hors connexion · ${plural(QUEUE.length, 'action')} en attente`);
+  } catch (e) { e.net && cached ? toast('Hors connexion · dernière version enregistrée') : fail(e); }
   $('#loading').hidden = true;
 }
 
@@ -634,6 +664,22 @@ function labelHtml(w) {
 }
 const placeName = p => `Zone ${p.zone} · ${p.cote}`;
 
+// Tes dégustations de ce vin (tous millésimes), puis des autres vins du même domaine ; les plus récentes d'abord
+function tastingsHtml(w) {
+  const dom = D.drunk.filter(x => norm(x.domaine) === norm(w.domaine)).sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  if (!dom.length) return '';
+  const isThis = x => norm(x.appellation) === norm(w.appellation) && norm(x.cuvee) === norm(w.cuvee);
+  const item = x => `<div class="tast">
+      ${x.note !== '' ? `<div class="note"><b>${fmtNote(x.note)}</b><span>/20</span></div>` : ''}
+      <div class="grow"><div class="date">${frDate(x.date)} · ${esc(x.millesime || 'NM')}</div>
+        ${isThis(x) ? '' : `<div class="what">${esc(x.appellation)}${x.cuvee ? ` <i>· ${esc(x.cuvee)}</i>` : ''}</div>`}
+        ${x.stade || x.racheter === 'Oui' ? `<div class="tags">${x.stade ? `<span class="tag">${icon('clock')}${esc(x.stade)}</span>` : ''}${x.racheter === 'Oui' ? `<span class="tag">${icon('cart')}À racheter</span>` : ''}</div>` : ''}
+        ${x.commentaire ? `<div class="quote">« ${esc(x.commentaire)} »</div>` : ''}</div></div>`;
+  const mine = dom.filter(isThis), others = dom.filter(x => !isThis(x));
+  return (mine.length ? `<div class="group">Tes dégustations de ce vin</div><div class="tasts">${mine.slice(0, 5).map(item).join('')}</div>` : '')
+    + (others.length ? `<div class="group">Autres vins de ce domaine</div><div class="tasts">${others.slice(0, 4).map(item).join('')}</div>` : '');
+}
+
 function showWine(key, open) {
   const w = findWine(key); if (!w) return closeSheet();
   openSheet(`${labelHtml(w)}
@@ -642,7 +688,8 @@ function showWine(key, open) {
       <b>${plural(w.nb, 'bouteille')}</b><span>${w.nb > 1 ? 'Où sont-elles ?' : 'Où est-elle ?'}</span>${icon('chev')}</button>
     <div class="locs" id="w-locs" ${open ? '' : 'hidden'}>${w.locs.map(l => `<button class="loc" data-z="${esc(l.zone)}" data-c="${esc(l.cote)}">${icon('pin')}<span>${esc(placeName(l))}</span><b>${plural(l.nb, 'bouteille')}</b>${icon('chev')}</button>`).join('')}</div>
     <button class="btn" id="w-drink">${icon('glass')}J'ouvre une bouteille</button>
-    <div class="row3"><button class="btn ghost" id="w-plus">${icon('plus')}1 bouteille</button><button class="btn ghost" id="w-move">${icon('move')}Déplacer</button><button class="btn ghost" id="w-edit">${icon('edit')}Modifier</button></div>`);
+    <div class="row3"><button class="btn ghost" id="w-plus">${icon('plus')}1 bouteille</button><button class="btn ghost" id="w-move">${icon('move')}Déplacer</button><button class="btn ghost" id="w-edit">${icon('edit')}Modifier</button></div>
+    ${tastingsHtml(w)}`);
   const back = () => showWine(key, true);
   $('#w-count').onclick = e => { const b = e.currentTarget, l = $('#w-locs'); l.hidden = !l.hidden; b.setAttribute('aria-expanded', String(!l.hidden)); };
   // Toucher un emplacement ouvre ce casier dans l'onglet Zones
@@ -737,23 +784,122 @@ function drinkForm(b, back) {
   $('#d-ok').onclick = () => {
     const note = $('#d-note').value;
     if (note !== '' && (note < 0 || note > 20)) return toast('La note doit être entre 0 et 20');
-    save('drinkBottle', [b.row, keyOf(b), { date: $('#d-date').value, note, stade: stade(), racheter: rach(), commentaire: $('#d-com').value.trim() }], 'Santé !');
+    save('drinkBottle', [b.row, keyOf(b), { date: $('#d-date').value || today(), note, stade: stade(), racheter: rach(), commentaire: $('#d-com').value.trim() }], 'Santé !');
   };
 }
 
-async function save(fn, args, msg) {
-  const btns = document.querySelectorAll('.sheet .btn, #v-add .btn'); btns.forEach(x => x.disabled = true);
-  try { setData(await run(fn, ...args)); closeSheet(); toast(msg); return true; }
-  catch (e) { fail(e); return false; }
-  finally { btns.forEach(x => x.disabled = false); }
+/* ---------- Actions : enregistrement, hors connexion, annulation ----------
+   Chaque action est une liste d'appels au script. Avant de l'envoyer, l'app calcule localement
+   le résultat attendu (affiché tout de suite si le réseau manque) et les appels inverses (pour « Annuler »). */
+const clone = o => JSON.parse(JSON.stringify(o));
+const txt_ = x => x == null ? '' : String(x).trim();
+const rowOf = o => ({ zone: txt_(Number(o.zone)), cote: txt_(o.cote), couleur: txt_(o.couleur), region: txt_(o.region), domaine: txt_(o.domaine),
+  appellation: txt_(o.appellation), cuvee: txt_(o.cuvee), millesime: txt_(o.millesime), nb: Math.max(0, Math.round(Number(o.nb) || 0)) });
+function checkRow(o, allowZero) {
+  if (!o || !txt_(o.domaine)) throw new Error('Le domaine est obligatoire.');
+  if (!(Number(o.zone) >= 1 && Number(o.zone) <= 5)) throw new Error('La zone doit être entre 1 et 5.');
+  if (!['Avant', 'Arrière'].includes(txt_(o.cote))) throw new Error('Le côté doit être Avant ou Arrière.');
+  if (!(Number(o.nb) >= (allowZero ? 0 : 1))) throw new Error('Nombre de bouteilles invalide.');
+}
+function rowIndex(d, row, key) {
+  let i = d.bottles.findIndex(b => b.row === row && keyOf(b) === key);
+  if (i < 0) i = d.bottles.findIndex(b => keyOf(b) === key);
+  if (i < 0) throw new Error('Ce vin a été modifié ailleurs. Actualise et réessaie.');
+  return i;
+}
+const sameTasting = (x, t) => x.date === t.date && x.domaine === t.domaine && x.appellation === t.appellation && x.cuvee === t.cuvee && txt_(x.millesime) === txt_(t.millesime);
+// Même logique que le script, appliquée à la copie locale des données
+const LOCAL = {
+  addBottle(d, o) {
+    d = clone(d); checkRow(o); const v = rowOf(o), i = d.bottles.findIndex(b => keyOf(b) === keyOf(v));
+    if (i >= 0) d.bottles[i].nb += v.nb; else d.bottles.push({ ...v, row: Math.max(1, ...d.bottles.map(b => b.row)) + 1 });
+    return d;
+  },
+  updateBottle(d, row, key, o) {
+    d = clone(d); checkRow(o, true); const i = rowIndex(d, row, key), v = rowOf(o);
+    if (v.nb <= 0) d.bottles.splice(i, 1); else d.bottles[i] = { ...v, row: d.bottles[i].row };
+    return d;
+  },
+  drinkBottle(d, row, key, t) {
+    d = clone(d); const i = rowIndex(d, row, key), b = d.bottles[i];
+    const note = t.note === '' || t.note == null ? '' : Math.max(0, Math.min(20, Number(String(t.note).replace(',', '.'))));
+    d.drunk.push({ date: t.date || today(), couleur: b.couleur, region: b.region, domaine: b.domaine, appellation: b.appellation, cuvee: b.cuvee,
+      millesime: b.millesime, note, stade: txt_(t.stade), racheter: txt_(t.racheter), commentaire: txt_(t.commentaire) });
+    if (b.nb > 1) b.nb--; else d.bottles.splice(i, 1);
+    return d;
+  },
+  undoDrink(d, t) {
+    d = clone(d);
+    for (let i = d.drunk.length - 1; i >= 0; i--) if (sameTasting(d.drunk[i], t)) { d.drunk.splice(i, 1); return d; }
+    throw new Error('Dégustation introuvable.');
+  }
+};
+// Appels qui défont un appel donné, calculés sur l'état juste avant cet appel
+function inverseOf(d, fn, args) {
+  if (fn === 'addBottle') {
+    const v = rowOf(args[0]), ex = d.bottles.find(b => keyOf(b) === keyOf(v));
+    return [['updateBottle', [0, keyOf(v), ex ? { ...ex } : { ...v, nb: 0 }]]];
+  }
+  if (fn === 'updateBottle') {
+    const [row, key, o] = args, prev = { ...d.bottles[rowIndex(d, row, key)] }, v = rowOf(o);
+    return v.nb > 0 ? [['updateBottle', [0, keyOf(v), prev]]] : [['addBottle', [prev]]];
+  }
+  if (fn === 'drinkBottle') {
+    const [row, key, t] = args, b = d.bottles[rowIndex(d, row, key)];
+    return [['undoDrink', [{ date: t.date || today(), domaine: b.domaine, appellation: b.appellation, cuvee: b.cuvee, millesime: b.millesime }]], ['addBottle', [{ ...b, nb: 1 }]]];
+  }
+  return [];
 }
 
-async function saveSeq(calls, msg) {
-  const btns = document.querySelectorAll('.sheet .btn'); btns.forEach(x => x.disabled = true);
-  try { let d; for (const [fn, args] of calls) d = await run(fn, ...args); setData(d); closeSheet(); toast(msg); return true; }
-  catch (e) { fail(e); try { setData(await run('getData')); } catch (_) {} return false; }
-  finally { btns.forEach(x => x.disabled = false); }
+// File d'attente des actions faites sans réseau (gardée sur l'appareil, envoyée au retour du réseau)
+let QUEUE = store.get('cave-queue') || [], SYNCING = false;
+function saveQueue() { store.set('cave-queue', QUEUE); const b = $('#pending'); b.hidden = !QUEUE.length; $('#pending-n').textContent = QUEUE.length; }
+async function sync(silent) {
+  if (!QUEUE.length || SYNCING) return;
+  SYNCING = true; let d = null; const refused = [];
+  try {
+    while (QUEUE.length) {
+      const [fn, args] = QUEUE[0];
+      try { d = await run(fn, ...args); }
+      catch (e) { if (e.net) throw e; refused.push(e.message); } // refusée par le script : on l'écarte et on continue
+      QUEUE.shift(); saveQueue();
+    }
+    setData(d || await run('getData'));
+    toast(refused.length ? `Synchronisé · ${plural(refused.length, 'action')} non appliquée${refused.length > 1 ? 's' : ''} : ${refused[0]}` : 'Actions en attente enregistrées');
+  } catch (e) { if (!silent) toast(e.net ? `Toujours hors connexion · ${plural(QUEUE.length, 'action')} en attente` : '⚠️ ' + e.message); }
+  finally { SYNCING = false; }
 }
+
+async function perform(calls, msg, undoable = true) {
+  // 1. Résultat attendu et appels inverses (vérifie aussi les données avant tout envoi)
+  let expected = D, inverse = [];
+  try { for (const [fn, args] of calls) { inverse = inverseOf(expected, fn, args).concat(inverse); expected = LOCAL[fn](expected, ...args); } }
+  catch (e) { fail(e); return false; }
+  const btns = document.querySelectorAll('.sheet .btn, #v-add .btn'); btns.forEach(x => x.disabled = true);
+  let d = null, i = 0, queued = false;
+  try {
+    // s'il reste des actions en attente, on passe derrière elles pour garder l'ordre
+    if (QUEUE.length) throw Object.assign(new Error(''), { net: true });
+    for (; i < calls.length; i++) d = await run(...[calls[i][0], ...calls[i][1]]);
+    setData(d);
+  } catch (e) {
+    if (!e.net) { fail(e); try { setData(await run('getData')); } catch (_) {} btns.forEach(x => x.disabled = false); return false; }
+    // 2. Pas de réseau : on garde les appels restants et on affiche le résultat attendu
+    const rest = calls.slice(i); let st = d || D;
+    for (const [fn, args] of rest) st = LOCAL[fn](st, ...args);
+    QUEUE.push(...rest); saveQueue(); setData(st); queued = true;
+  }
+  btns.forEach(x => x.disabled = false);
+  closeSheet();
+  const text = queued ? `${msg} · en attente de réseau` : msg;
+  if (undoable && inverse.length) toastUndo(text, () => perform(inverse, 'Action annulée', false)); else toast(text);
+  return true;
+}
+const save = (fn, args, msg) => perform([[fn, args]], msg);
+const saveSeq = (calls, msg) => perform(calls, msg);
+
+window.addEventListener('online', () => sync());
+setInterval(() => { if (QUEUE.length && navigator.onLine !== false) sync(true); }, 30000);
 
 /* ---------- Formulaire vin ---------- */
 function wineForm(o, edit, extra) {
@@ -967,6 +1113,8 @@ $('#f-couleur').onclick = e => { const c = e.target.closest('.chip'); if (!c) re
 $('#cave-list').onclick = e => { const c = e.target.closest('.card'); if (c) showWine(c.dataset.w); };
 $('.sheet-bg').onclick = closeSheet;
 $('#refresh').onclick = load;
+$('#pending').onclick = () => sync();
+saveQueue();
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 load();
