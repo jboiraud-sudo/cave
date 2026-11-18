@@ -28,6 +28,20 @@ nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);b
 nav button{flex:1;border:0;background:none;color:var(--muted);padding:10px 0 8px;font-size:12px;display:flex;flex-direction:column;align-items:center;gap:2px}
 nav button span{font-size:20px}
 nav button.on{color:var(--accent);font-weight:600}
+nav button.add span{width:44px;height:44px;margin-top:-18px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:400;box-shadow:0 2px 8px rgba(0,0,0,.25);border:3px solid var(--card)}
+.places{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.place{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:left;font:inherit;color:var(--ink);display:flex;flex-direction:column;gap:6px;cursor:pointer;min-width:0}
+.place .pl{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.place .pn{font-size:22px;font-weight:700;line-height:1.1}
+.place .pn small{font-size:13px;font-weight:400;color:var(--muted)}
+.place .pc{font-size:12px;color:var(--muted);min-height:1.4em}
+.place .mix{display:flex;height:6px;border-radius:3px;overflow:hidden;background:var(--accent-soft)}
+.place .mix i{display:block;height:100%}
+.place.empty{background:none;border-style:dashed}
+.place.empty .pn{color:var(--muted);font-size:16px;font-weight:600}
+.zrow{display:contents}
+.back{border:0;background:none;color:var(--accent);font:inherit;font-weight:600;padding:6px 0;margin:-2px 0 4px}
+.ztitle{font-size:20px;font-weight:700;margin:2px 0}
 input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
 textarea{min-height:70px;resize:vertical}
 label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
@@ -98,6 +112,8 @@ h2{font-size:17px;margin:20px 0 8px}
     <div id="cave-list"></div>
   </section>
 
+  <section id="v-zones" hidden></section>
+
   <section id="v-add" hidden>
     <h2>Ajouter des bouteilles</h2>
     <div id="add-form"></div>
@@ -112,8 +128,9 @@ h2{font-size:17px;margin:20px 0 8px}
 </main>
 
 <nav>
-  <button data-v="cave" class="on"><span>🍾</span>Cave</button>
-  <button data-v="add"><span>➕</span>Ajouter</button>
+  <button data-v="cave" class="on"><span>📋</span>Liste</button>
+  <button data-v="zones"><span>🗄️</span>Zones</button>
+  <button data-v="add" class="add"><span>+</span>Ajouter</button>
   <button data-v="bues"><span>🥂</span>Bues</button>
   <button data-v="stats"><span>📊</span>Stats</button>
 </nav>
@@ -214,7 +231,7 @@ function setData(d) {
   setOpts('#f-region', 'Toutes les régions', uniq(B.map(b => b.region)), F.region);
   setOpts('#f-zone', 'Toutes les zones', uniq(B.map(b => b.zone)), F.zone, z => 'Zone ' + z);
 
-  renderCave(); renderBues(); renderStats();
+  renderCave(); renderZones(); renderBues(); renderStats();
   if (!$('#add-form').innerHTML) renderAdd();
 }
 
@@ -234,15 +251,83 @@ function renderCave() {
   list.forEach(b => {
     const g = `Zone ${b.zone} · ${b.cote}`;
     if (g !== grp) { grp = g; html += `<div class="group">${esc(g)}</div>`; }
-    html += `<div class="card tap" data-row="${b.row}">
+    html += cardHtml(b);
+  });
+  $('#cave-list').innerHTML = html;
+}
+
+function cardHtml(b) {
+  return `<div class="card tap" data-row="${b.row}">
       <div class="dot ${colorCls(b.couleur)}"></div>
       <div class="grow"><div class="t">${esc(b.domaine)}</div>
         <div class="s">${esc(b.appellation)}${b.cuvee ? ' — ' + esc(b.cuvee) : ''}</div>
         <div class="s">${esc(b.millesime || 'NM')} · ${esc(b.region)}</div></div>
       <div class="badge">×${b.nb}</div></div>`;
-  });
-  $('#cave-list').innerHTML = html;
 }
+
+/* ---------- Zones ---------- */
+const ZONES = ['1', '2', '3', '4', '5'], COTES = ['Avant', 'Arrière'];
+let ZSEL = null; // emplacement ouvert : { zone, cote } ou null
+const sortBottles = (a, b) => a.domaine.localeCompare(b.domaine, 'fr') || String(a.millesime).localeCompare(String(b.millesime));
+const plural = (n, w) => `${n} ${w}${n > 1 ? 's' : ''}`;
+
+function places() {
+  // Les 10 emplacements prévus, plus tout emplacement inattendu présent dans la feuille
+  const list = [];
+  ZONES.forEach(z => COTES.forEach(c => list.push({ zone: z, cote: c })));
+  D.bottles.forEach(b => { if (!list.some(p => p.zone === b.zone && p.cote === b.cote)) list.push({ zone: b.zone, cote: b.cote }); });
+  return list.map(p => ({ ...p, bottles: D.bottles.filter(b => b.zone === p.zone && b.cote === p.cote) }));
+}
+
+function renderZones() {
+  if (ZSEL) return renderZone();
+  const P = places();
+  const tot = P.reduce((s, p) => s + p.bottles.reduce((t, b) => t + b.nb, 0), 0);
+  const vides = P.filter(p => !p.bottles.length).length;
+  $('#v-zones').innerHTML = `
+    <div class="summary">${plural(tot, 'bouteille')} · ${vides ? plural(vides, 'emplacement') + ' vide' + (vides > 1 ? 's' : '') : 'aucun emplacement vide'}</div>
+    <div class="places">${P.map(p => {
+      const n = p.bottles.reduce((s, b) => s + b.nb, 0);
+      const label = `Zone ${esc(p.zone)} · ${esc(p.cote)}`;
+      if (!n) return `<button class="place empty" data-z="${esc(p.zone)}" data-c="${esc(p.cote)}"><span class="pl">${label}</span><span class="pn">Vide</span><span class="pc">Place disponible</span></button>`;
+      const by = {}; p.bottles.forEach(b => { const k = colorCls(b.couleur) || 'autre'; by[k] = (by[k] || 0) + b.nb; });
+      const order = ['rouge', 'blanc', 'rose', 'champagne', 'autre'];
+      const names = { rouge: 'rouge', blanc: 'blanc', rose: 'rosé', champagne: 'champagne', autre: 'autre' };
+      const parts = order.filter(k => by[k]).map(k => `${by[k]} ${names[k]}${by[k] > 1 && k !== 'champagne' ? 's' : ''}`);
+      const bar = order.filter(k => by[k]).map(k => `<i class="dot ${k === 'autre' ? '' : k}" style="width:${by[k] / n * 100}%;margin:0;border-radius:0"></i>`).join('');
+      return `<button class="place" data-z="${esc(p.zone)}" data-c="${esc(p.cote)}"><span class="pl">${label}</span>
+        <span class="pn">${n} <small>bouteille${n > 1 ? 's' : ''}</small></span>
+        <span class="mix">${bar}</span><span class="pc">${parts.join(' · ')}</span></button>`;
+    }).join('')}</div>`;
+}
+
+function renderZone() {
+  const { zone, cote } = ZSEL;
+  const list = D.bottles.filter(b => b.zone === zone && b.cote === cote).sort(sortBottles);
+  const n = list.reduce((s, b) => s + b.nb, 0);
+  $('#v-zones').innerHTML = `
+    <button class="back" id="z-back">← Zones</button>
+    <div class="ztitle">Zone ${esc(zone)} · ${esc(cote)}</div>
+    <div class="summary">${n ? plural(n, 'bouteille') + ' · ' + plural(list.length, 'référence') : 'Emplacement vide'}</div>
+    ${list.length ? list.map(cardHtml).join('') : '<div class="empty">Aucune bouteille ici pour l\'instant.</div>'}
+    <button class="btn ghost" id="z-add">+ Ajouter une bouteille ici</button>`;
+}
+
+function openZone(zone, cote) {
+  ZSEL = { zone, cote };
+  try { history.pushState({ zone: 1 }, ''); } catch (e) {}
+  renderZones(); window.scrollTo(0, 0);
+}
+function closeZone() { ZSEL = null; renderZones(); window.scrollTo(0, 0); }
+
+$('#v-zones').onclick = e => {
+  const p = e.target.closest('.place'); if (p) return openZone(p.dataset.z, p.dataset.c);
+  if (e.target.closest('#z-back')) { if (history.state && history.state.zone) history.back(); else closeZone(); return; }
+  if (e.target.closest('#z-add')) { renderAdd({ zone: ZSEL.zone, cote: ZSEL.cote, nb: 1 }); showView('add'); return; }
+  const c = e.target.closest('.card'); if (c) showBottle(Number(c.dataset.row));
+};
+// Bouton « retour » du téléphone : revient à la grille des zones au lieu de quitter l'app
+window.addEventListener('popstate', () => { if (ZSEL) closeZone(); });
 
 /* ---------- Fiche bouteille ---------- */
 function openSheet(html) { $('#sheet-panel').innerHTML = '<div class="grip"></div>' + html; $('#sheet').hidden = false; }
@@ -330,8 +415,8 @@ function bindWineForm(root, onSubmit) {
   };
 }
 
-function renderAdd() {
-  $('#add-form').innerHTML = wineForm(null, false);
+function renderAdd(prefill) {
+  $('#add-form').innerHTML = wineForm(prefill || null, false);
   bindWineForm($('#add-form'), o => save('addBottle', [o], `${o.nb} bouteille${o.nb > 1 ? 's' : ''} ajoutée${o.nb > 1 ? 's' : ''}`));
 }
 
@@ -379,10 +464,15 @@ function renderStats() {
 }
 
 /* ---------- Événements ---------- */
-document.querySelectorAll('nav button').forEach(btn => btn.onclick = () => {
-  document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x === btn));
-  ['cave', 'add', 'bues', 'stats'].forEach(v => $('#v-' + v).hidden = v !== btn.dataset.v);
+function showView(v) {
+  document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x.dataset.v === v));
+  ['cave', 'zones', 'add', 'bues', 'stats'].forEach(k => $('#v-' + k).hidden = k !== v);
   window.scrollTo(0, 0);
+}
+document.querySelectorAll('nav button').forEach(btn => btn.onclick = () => {
+  // Toucher « Zones » depuis une zone ouverte ramène à la grille
+  if (btn.dataset.v === 'zones' && ZSEL && !$('#v-zones').hidden) closeZone();
+  showView(btn.dataset.v);
 });
 $('#q').oninput = e => { F.q = e.target.value; renderCave(); };
 $('#f-region').onchange = e => { F.region = e.target.value; renderCave(); };
