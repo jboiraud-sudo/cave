@@ -639,7 +639,7 @@ function showWine(key, open) {
   openSheet(`${labelHtml(w)}
     <button class="count" id="w-count" aria-expanded="${open ? 'true' : 'false'}">
       <svg class="btl k-${kind(w)}" viewBox="0 0 16 40" style="width:9px;height:22px" aria-hidden="true"><use href="#i-bottle"/></svg>
-      <b>${plural(w.nb, 'bouteille')}</b><span>${w.locs.length > 1 ? plural(w.locs.length, 'emplacement') : 'Où est-elle ?'}</span>${icon('chev')}</button>
+      <b>${plural(w.nb, 'bouteille')}</b><span>${w.nb > 1 ? 'Où sont-elles ?' : 'Où est-elle ?'}</span>${icon('chev')}</button>
     <div class="locs" id="w-locs" ${open ? '' : 'hidden'}>${w.locs.map(l => `<button class="loc" data-z="${esc(l.zone)}" data-c="${esc(l.cote)}">${icon('pin')}<span>${esc(placeName(l))}</span><b>${plural(l.nb, 'bouteille')}</b>${icon('chev')}</button>`).join('')}</div>
     <button class="btn" id="w-drink">${icon('glass')}J'ouvre une bouteille</button>
     <div class="row3"><button class="btn ghost" id="w-plus">${icon('plus')}1 bouteille</button><button class="btn ghost" id="w-move">${icon('move')}Déplacer</button><button class="btn ghost" id="w-edit">${icon('edit')}Modifier</button></div>`);
