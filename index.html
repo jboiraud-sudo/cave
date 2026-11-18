@@ -153,6 +153,28 @@ label{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
 .grip{width:40px;height:4px;border-radius:2px;background:var(--line);margin:6px auto 12px}
 .sheet h2{margin-top:4px}
 .sheet .sub{font:italic 500 15.5px var(--serif);color:var(--muted);margin-top:-6px}
+/* Fiche vin : bouteilles et emplacements */
+.count{display:flex;align-items:center;gap:10px;width:100%;margin-top:10px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--wash);text-align:left}
+.count b{font-weight:600}
+.count span{flex:1;color:var(--muted);font-size:13px;text-align:right}
+.count>.ic,.loc>.ic:last-child,.opt>.ic:last-child{width:16px;height:16px;color:var(--muted);transition:transform .2s}
+.count[aria-expanded="true"]>.ic{transform:rotate(90deg)}
+.locs{display:flex;flex-direction:column;gap:6px;margin-top:6px;animation:rise .25s cubic-bezier(.2,.8,.2,1)}
+.opts{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.loc,.opt{display:flex;align-items:center;gap:10px;width:100%;padding:11px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);text-align:left;font-size:15px}
+.loc span,.opt span{flex:1;min-width:0}
+.loc b{font-weight:600;font-size:14px;color:var(--muted);font-variant-numeric:lining-nums tabular-nums}
+.loc>.ic:first-child,.opt>.ic:first-child{width:18px;height:18px;color:var(--gold)}
+.opt small{display:block;font-size:12px;color:var(--muted)}
+.opts .group{margin:12px 0 4px}
+.row3{display:flex;gap:8px}.row3>.btn{flex:1;min-width:0;padding:12px 4px;font-size:14px;gap:5px}
+.row3>.btn .ic{width:17px;height:17px}
+.qty{display:flex;align-items:center;justify-content:center;gap:22px;margin:18px 0 6px}
+.qty button{width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:var(--card);font-size:24px;line-height:1;color:var(--accent)}
+.qty b{font:600 36px var(--serif);min-width:54px;text-align:center;font-variant-numeric:lining-nums}
+.locq{display:flex;align-items:center;gap:10px;margin-top:8px}
+.locq span{flex:1;font-size:15px}
+.locq input{width:84px;text-align:center}
 .seg{display:flex;gap:6px}
 .seg button{flex:1;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 4px;font-size:14px;transition:background .15s,color .15s}
 .seg button.on{background:var(--accent);border-color:var(--accent);color:#fff}
@@ -248,6 +270,8 @@ nav button.add .plus .ic{width:26px;height:26px;stroke-width:2.2}
   <symbol id="i-cart" viewBox="0 0 24 24"><path d="M3 4h2.5l2.2 10.5h10.6L20.5 8H7"/><circle cx="9" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/></symbol>
   <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/></symbol>
   <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+  <symbol id="i-move" viewBox="0 0 24 24"><path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/></symbol>
   <!-- REGIONS:START -->
   <symbol id="r-bourgogne" viewBox="0 0 320 180"><clipPath id="clip-bg-roof"><polygon points="40,122 72,46 248,46 280,122"/></clipPath> <g clip-path="url(#clip-bg-roof)" stroke-width=".8"><line x1="-200" y1="46" x2="-124" y2="122"/><line x1="-200" y1="122" x2="-124" y2="46"/><line x1="-187" y1="46" x2="-111" y2="122"/><line x1="-187" y1="122" x2="-111" y2="46"/><line x1="-174" y1="46" x2="-98" y2="122"/><line x1="-174" y1="122" x2="-98" y2="46"/><line x1="-161" y1="46" x2="-85" y2="122"/><line x1="-161" y1="122" x2="-85" y2="46"/><line x1="-148" y1="46" x2="-72" y2="122"/><line x1="-148" y1="122" x2="-72" y2="46"/><line x1="-135" y1="46" x2="-59" y2="122"/><line x1="-135" y1="122" x2="-59" y2="46"/><line x1="-122" y1="46" x2="-46" y2="122"/><line x1="-122" y1="122" x2="-46" y2="46"/><line x1="-109" y1="46" x2="-33" y2="122"/><line x1="-109" y1="122" x2="-33" y2="46"/><line x1="-96" y1="46" x2="-20" y2="122"/><line x1="-96" y1="122" x2="-20" y2="46"/><line x1="-83" y1="46" x2="-7" y2="122"/><line x1="-83" y1="122" x2="-7" y2="46"/><line x1="-70" y1="46" x2="6" y2="122"/><line x1="-70" y1="122" x2="6" y2="46"/><line x1="-57" y1="46" x2="19" y2="122"/><line x1="-57" y1="122" x2="19" y2="46"/><line x1="-44" y1="46" x2="32" y2="122"/><line x1="-44" y1="122" x2="32" y2="46"/><line x1="-31" y1="46" x2="45" y2="122"/><line x1="-31" y1="122" x2="45" y2="46"/><line x1="-18" y1="46" x2="58" y2="122"/><line x1="-18" y1="122" x2="58" y2="46"/><line x1="-5" y1="46" x2="71" y2="122"/><line x1="-5" y1="122" x2="71" y2="46"/><line x1="8" y1="46" x2="84" y2="122"/><line x1="8" y1="122" x2="84" y2="46"/><line x1="21" y1="46" x2="97" y2="122"/><line x1="21" y1="122" x2="97" y2="46"/><line x1="34" y1="46" x2="110" y2="122"/><line x1="34" y1="122" x2="110" y2="46"/><line x1="47" y1="46" x2="123" y2="122"/><line x1="47" y1="122" x2="123" y2="46"/><line x1="60" y1="46" x2="136" y2="122"/><line x1="60" y1="122" x2="136" y2="46"/><line x1="73" y1="46" x2="149" y2="122"/><line x1="73" y1="122" x2="149" y2="46"/><line x1="86" y1="46" x2="162" y2="122"/><line x1="86" y1="122" x2="162" y2="46"/><line x1="99" y1="46" x2="175" y2="122"/><line x1="99" y1="122" x2="175" y2="46"/><line x1="112" y1="46" x2="188" y2="122"/><line x1="112" y1="122" x2="188" y2="46"/><line x1="125" y1="46" x2="201" y2="122"/><line x1="125" y1="122" x2="201" y2="46"/><line x1="138" y1="46" x2="214" y2="122"/><line x1="138" y1="122" x2="214" y2="46"/><line x1="151" y1="46" x2="227" y2="122"/><line x1="151" y1="122" x2="227" y2="46"/><line x1="164" y1="46" x2="240" y2="122"/><line x1="164" y1="122" x2="240" y2="46"/><line x1="177" y1="46" x2="253" y2="122"/><line x1="177" y1="122" x2="253" y2="46"/><line x1="190" y1="46" x2="266" y2="122"/><line x1="190" y1="122" x2="266" y2="46"/><line x1="203" y1="46" x2="279" y2="122"/><line x1="203" y1="122" x2="279" y2="46"/><line x1="216" y1="46" x2="292" y2="122"/><line x1="216" y1="122" x2="292" y2="46"/><line x1="229" y1="46" x2="305" y2="122"/><line x1="229" y1="122" x2="305" y2="46"/><line x1="242" y1="46" x2="318" y2="122"/><line x1="242" y1="122" x2="318" y2="46"/><line x1="255" y1="46" x2="331" y2="122"/><line x1="255" y1="122" x2="331" y2="46"/><line x1="268" y1="46" x2="344" y2="122"/><line x1="268" y1="122" x2="344" y2="46"/><line x1="281" y1="46" x2="357" y2="122"/><line x1="281" y1="122" x2="357" y2="46"/><line x1="294" y1="46" x2="370" y2="122"/><line x1="294" y1="122" x2="370" y2="46"/><line x1="307" y1="46" x2="383" y2="122"/><line x1="307" y1="122" x2="383" y2="46"/><line x1="320" y1="46" x2="396" y2="122"/><line x1="320" y1="122" x2="396" y2="46"/><line x1="333" y1="46" x2="409" y2="122"/><line x1="333" y1="122" x2="409" y2="46"/><line x1="346" y1="46" x2="422" y2="122"/><line x1="346" y1="122" x2="422" y2="46"/><line x1="359" y1="46" x2="435" y2="122"/><line x1="359" y1="122" x2="435" y2="46"/><line x1="372" y1="46" x2="448" y2="122"/><line x1="372" y1="122" x2="448" y2="46"/><line x1="385" y1="46" x2="461" y2="122"/><line x1="385" y1="122" x2="461" y2="46"/><line x1="398" y1="46" x2="474" y2="122"/><line x1="398" y1="122" x2="474" y2="46"/></g> <polygon points="40,122 72,46 248,46 280,122"/> <path class="pl" d="M88,114 V92 L101,72 L114,92 V114 Z"/> <path d="M93,114 V96 Q101,86 109,96 V114"/> <line x1="101" y1="72" x2="101" y2="62"/><circle cx="101" cy="60" r="2"/><path class="pl" d="M147,114 V86 L160,66 L173,86 V114 Z"/> <path d="M152,114 V90 Q160,80 168,90 V114"/> <line x1="160" y1="66" x2="160" y2="56"/><circle cx="160" cy="54" r="2"/><path class="pl" d="M206,114 V92 L219,72 L232,92 V114 Z"/> <path d="M211,114 V96 Q219,86 227,96 V114"/> <line x1="219" y1="72" x2="219" y2="62"/><circle cx="219" cy="60" r="2"/> <line x1="72" y1="46" x2="72" y2="30"/><circle cx="72" cy="27" r="2.5"/> <line x1="248" y1="46" x2="248" y2="30"/><circle cx="248" cy="27" r="2.5"/> <path d="M160,46 V14 M154,24 L160,10 L166,24"/> <rect x="40" y="122" width="240" height="44"/> <path d="M51,158 V138 Q58,130 65,138 V158 Z"/><path d="M85,158 V138 Q92,130 99,138 V158 Z"/><path d="M119,158 V138 Q126,130 133,138 V158 Z"/><path d="M187,158 V138 Q194,130 201,138 V158 Z"/><path d="M221,158 V138 Q228,130 235,138 V158 Z"/><path d="M255,158 V138 Q262,130 269,138 V158 Z"/> <path d="M148,166 V140 Q160,128 172,140 V166"/> <line x1="8" y1="166" x2="312" y2="166"/></symbol>
   <symbol id="r-rhone-nord" viewBox="0 0 320 180"><path d="M8,162 C80,150 150,120 200,82 S280,22 314,14"/> <g stroke-width="1"><path d="M40,155 h22 v4 M66,148.8 h22 v4 M92,140.9 h22 v4 M118,131.6 h22 v4 M144,121 h22 v4 M170,109.1 h22 v4 M196,96.1 h22 v4 M222,82 h22 v4 M248,66.9 h22 v4 M274,50.8 h22 v4 M300,33.7 h22 v4 "/><path d="M98,155.9 h22 v4 M124,146.3 h22 v4 M150,135.3 h22 v4 M176,123.2 h22 v4 M202,109.9 h22 v4 M228,95.6 h22 v4 M254,80.3 h22 v4 M280,63.9 h22 v4 M306,46.7 h22 v4 "/><path d="M130,160.9 h22 v4 M156,149.7 h22 v4 M182,137.2 h22 v4 M208,123.7 h22 v4 M234,109.2 h22 v4 M260,93.6 h22 v4 M286,77 h22 v4 "/><path d="M162,163.9 h22 v4 M188,151.2 h22 v4 M214,137.5 h22 v4 M240,122.6 h22 v4 M266,106.8 h22 v4 M292,90.1 h22 v4 "/><path d="M220,151.1 h22 v4 M246,136.1 h22 v4 M272,120.1 h22 v4 M298,103.1 h22 v4 "/><path d="M252,149.5 h22 v4 M278,133.2 h22 v4 M304,116 h22 v4 "/><path d="M258,162.8 h22 v4 M284,146.3 h22 v4 M310,128.9 h22 v4 "/></g><g stroke-width=".8"><path d="M47,155 v-8 M55,155 v-8 M45,149 q6,-3 12,0"/><path d="M73,148.8 v-8 M81,148.8 v-8 M71,142.8 q6,-3 12,0"/><path d="M99,140.9 v-8 M107,140.9 v-8 M97,134.9 q6,-3 12,0"/><path d="M125,131.6 v-8 M133,131.6 v-8 M123,125.6 q6,-3 12,0"/><path d="M151,121 v-8 M159,121 v-8 M149,115 q6,-3 12,0"/><path d="M177,109.1 v-8 M185,109.1 v-8 M175,103.1 q6,-3 12,0"/><path d="M203,96.1 v-8 M211,96.1 v-8 M201,90.1 q6,-3 12,0"/><path d="M229,82 v-8 M237,82 v-8 M227,76 q6,-3 12,0"/><path d="M255,66.9 v-8 M263,66.9 v-8 M253,60.9 q6,-3 12,0"/><path d="M281,50.8 v-8 M289,50.8 v-8 M279,44.8 q6,-3 12,0"/><path d="M307,33.7 v-8 M315,33.7 v-8 M305,27.7 q6,-3 12,0"/><path d="M105,155.9 v-8 M113,155.9 v-8 M103,149.9 q6,-3 12,0"/><path d="M131,146.3 v-8 M139,146.3 v-8 M129,140.3 q6,-3 12,0"/><path d="M157,135.3 v-8 M165,135.3 v-8 M155,129.3 q6,-3 12,0"/><path d="M183,123.2 v-8 M191,123.2 v-8 M181,117.2 q6,-3 12,0"/><path d="M209,109.9 v-8 M217,109.9 v-8 M207,103.9 q6,-3 12,0"/><path d="M235,95.6 v-8 M243,95.6 v-8 M233,89.6 q6,-3 12,0"/><path d="M261,80.3 v-8 M269,80.3 v-8 M259,74.3 q6,-3 12,0"/><path d="M287,63.9 v-8 M295,63.9 v-8 M285,57.9 q6,-3 12,0"/><path d="M313,46.7 v-8 M321,46.7 v-8 M311,40.7 q6,-3 12,0"/><path d="M137,160.9 v-8 M145,160.9 v-8 M135,154.9 q6,-3 12,0"/><path d="M163,149.7 v-8 M171,149.7 v-8 M161,143.7 q6,-3 12,0"/><path d="M189,137.2 v-8 M197,137.2 v-8 M187,131.2 q6,-3 12,0"/><path d="M215,123.7 v-8 M223,123.7 v-8 M213,117.7 q6,-3 12,0"/><path d="M241,109.2 v-8 M249,109.2 v-8 M239,103.2 q6,-3 12,0"/><path d="M267,93.6 v-8 M275,93.6 v-8 M265,87.6 q6,-3 12,0"/><path d="M293,77 v-8 M301,77 v-8 M291,71 q6,-3 12,0"/><path d="M169,163.9 v-8 M177,163.9 v-8 M167,157.9 q6,-3 12,0"/><path d="M195,151.2 v-8 M203,151.2 v-8 M193,145.2 q6,-3 12,0"/><path d="M221,137.5 v-8 M229,137.5 v-8 M219,131.5 q6,-3 12,0"/><path d="M247,122.6 v-8 M255,122.6 v-8 M245,116.6 q6,-3 12,0"/><path d="M273,106.8 v-8 M281,106.8 v-8 M271,100.8 q6,-3 12,0"/><path d="M299,90.1 v-8 M307,90.1 v-8 M297,84.1 q6,-3 12,0"/><path d="M227,151.1 v-8 M235,151.1 v-8 M225,145.1 q6,-3 12,0"/><path d="M253,136.1 v-8 M261,136.1 v-8 M251,130.1 q6,-3 12,0"/><path d="M279,120.1 v-8 M287,120.1 v-8 M277,114.1 q6,-3 12,0"/><path d="M305,103.1 v-8 M313,103.1 v-8 M303,97.1 q6,-3 12,0"/><path d="M259,149.5 v-8 M267,149.5 v-8 M257,143.5 q6,-3 12,0"/><path d="M285,133.2 v-8 M293,133.2 v-8 M283,127.2 q6,-3 12,0"/><path d="M311,116 v-8 M319,116 v-8 M309,110 q6,-3 12,0"/><path d="M265,162.8 v-8 M273,162.8 v-8 M263,156.8 q6,-3 12,0"/><path d="M291,146.3 v-8 M299,146.3 v-8 M289,140.3 q6,-3 12,0"/><path d="M317,128.9 v-8 M325,128.9 v-8 M315,122.9 q6,-3 12,0"/></g> <path d="M8,170 q12,-4 24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0" stroke-width="1"/> <path d="M30,177 q12,-4 24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0" stroke-width=".8"/></symbol>
@@ -291,7 +315,10 @@ nav button.add .plus .ic{width:26px;height:26px;stroke-width:2.2}
     <div class="chips" id="f-couleur"></div>
     <div class="filters">
       <select id="f-region" aria-label="Région"><option value="">Toutes les régions</option></select>
-      <select id="f-zone" aria-label="Zone"><option value="">Toutes les zones</option></select>
+      <select id="f-sort" aria-label="Trier par">
+        <option value="region">Trier par région</option><option value="domaine">Trier par domaine</option>
+        <option value="millesime">Trier par millésime</option><option value="couleur">Trier par couleur</option>
+      </select>
     </div>
     <div class="summary" id="cave-summary"></div>
     <div id="cave-list"></div>
@@ -363,7 +390,7 @@ const bottleIcon = k => `<svg class="btl k-${k}" viewBox="0 0 16 40" aria-hidden
 const fmtNote = n => String(n).replace('.', ',');
 
 let D = { bottles: [], drunk: [] };
-const F = { q: '', couleur: '', region: '', zone: '' };
+const F = { q: '', couleur: '', region: '', sort: store.get('cave-sort') || 'region' };
 
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2600); }
 function fail(e) { toast('⚠️ ' + (e && e.message ? e.message : e)); }
@@ -426,7 +453,7 @@ function setData(d) {
     $(id).innerHTML = `<option value="">${first}</option>` + vals.map(v => `<option value="${esc(v)}" ${v === cur ? 'selected' : ''}>${esc(label ? label(v) : v)}</option>`).join('');
   };
   setOpts('#f-region', 'Toutes les régions', uniq(B.map(b => b.region)), F.region);
-  setOpts('#f-zone', 'Toutes les zones', uniq(B.map(b => b.zone)), F.zone, z => 'Zone ' + z);
+  $('#f-sort').value = F.sort;
 
   renderCave(); renderZones(); renderBues(); renderStats();
   if (!$('#add-form').innerHTML) renderAdd();
@@ -442,22 +469,59 @@ function cardHtml(b) {
       <div class="vint"><b>${esc(b.millesime || 'NM')}</b><span>×${b.nb}</span></div></div>`;
 }
 
-function renderCave() {
-  const q = norm(F.q).split(/\s+/).filter(Boolean);
-  const list = D.bottles.filter(b =>
-    (!F.couleur || b.couleur === F.couleur) && (!F.region || b.region === F.region) && (!F.zone || b.zone === F.zone) &&
-    q.every(w => norm([b.domaine, b.appellation, b.cuvee, b.region, b.millesime, b.couleur].join(' ')).includes(w))
-  ).sort((a, b) => (a.zone - b.zone) || (a.cote === b.cote ? 0 : a.cote === 'Avant' ? -1 : 1) || a.domaine.localeCompare(b.domaine, 'fr') || String(a.millesime).localeCompare(String(b.millesime)));
+/* Un « vin » = même couleur, région, domaine, appellation, cuvée et millésime, quel que soit l'emplacement */
+const wineKey = b => [b.couleur, b.region, b.domaine, b.appellation, b.cuvee, b.millesime].join('|');
+const placeOrder = (z, c) => Number(z) * 2 + (c === 'Avant' ? 0 : 1);
+function wines() {
+  const m = new Map();
+  D.bottles.forEach(b => {
+    const k = wineKey(b);
+    if (!m.has(k)) m.set(k, { key: k, couleur: b.couleur, region: b.region, domaine: b.domaine, appellation: b.appellation, cuvee: b.cuvee, millesime: b.millesime, nb: 0, locs: [] });
+    const w = m.get(k); w.nb += b.nb; w.locs.push(b);
+  });
+  m.forEach(w => w.locs.sort((a, b) => placeOrder(a.zone, a.cote) - placeOrder(b.zone, b.cote)));
+  return [...m.values()];
+}
+const findWine = key => wines().find(w => w.key === key);
+const descOf = w => ({ couleur: w.couleur, region: w.region, domaine: w.domaine, appellation: w.appellation, cuvee: w.cuvee, millesime: w.millesime });
 
-  const n = list.reduce((s, b) => s + b.nb, 0);
-  $('#cave-summary').textContent = `${plural(n, 'bouteille')} · ${plural(list.length, 'référence')}`;
+// Tri des domaines sans « Domaine », « Château », « Mas »… ni l'article : « Domaine du Monteillet » se range à M
+const domSort = d => norm(d).replace(/^(domaines?|chateau|mas|maison|clos|vignobles?|cave)\s+/, '').replace(/^(de la|des|du|de|d'|l'|la|le|les)\s*/, '').trim();
+const cmpTxt = (a, b) => String(a || '').localeCompare(String(b || ''), 'fr', { sensitivity: 'base' });
+const cmpMil = (a, b) => (Number(a.millesime) || 9999) - (Number(b.millesime) || 9999);
+const cmpDom = (a, b) => cmpTxt(domSort(a.domaine), domSort(b.domaine));
+const SORTS = {
+  region: { cmp: (a, b) => cmpTxt(a.region, b.region) || cmpDom(a, b) || cmpMil(a, b) || cmpTxt(a.cuvee, b.cuvee), grp: w => w.region || 'Sans région', meta: w => w.couleur },
+  domaine: { cmp: (a, b) => cmpDom(a, b) || cmpTxt(a.domaine, b.domaine) || cmpMil(a, b) || cmpTxt(a.cuvee, b.cuvee), grp: w => (domSort(w.domaine)[0] || '#').toUpperCase(), meta: w => w.region },
+  millesime: { cmp: (a, b) => cmpMil(a, b) || cmpTxt(a.region, b.region) || cmpDom(a, b), grp: w => w.millesime || 'Sans millésime', meta: w => w.region },
+  couleur: { cmp: (a, b) => KORDER.indexOf(kind(a)) - KORDER.indexOf(kind(b)) || cmpTxt(a.couleur, b.couleur) || cmpTxt(a.region, b.region) || cmpDom(a, b) || cmpMil(a, b), grp: w => w.couleur || 'Autre', meta: w => w.region },
+};
+
+function wineCardHtml(w, meta) {
+  return `<div class="card tap" data-w="${esc(w.key)}">
+      ${bottleIcon(kind(w))}
+      <div class="grow"><div class="dom">${esc(w.domaine)}</div>
+        <div class="app">${esc(w.appellation)}${w.cuvee ? ` <i>· ${esc(w.cuvee)}</i>` : ''}</div>
+        <div class="meta">${esc(meta)}</div></div>
+      <div class="vint"><b>${esc(w.millesime || 'NM')}</b><span>×${w.nb}</span></div></div>`;
+}
+
+function renderCave() {
+  const q = norm(F.q).split(/\s+/).filter(Boolean), S = SORTS[F.sort] || SORTS.region;
+  const list = wines().filter(w =>
+    (!F.couleur || w.couleur === F.couleur) && (!F.region || w.region === F.region) &&
+    q.every(t => norm([w.domaine, w.appellation, w.cuvee, w.region, w.millesime, w.couleur].join(' ')).includes(t))
+  ).sort(S.cmp);
+
+  const n = list.reduce((s, w) => s + w.nb, 0);
+  $('#cave-summary').textContent = `${plural(n, 'bouteille')} · ${plural(list.length, 'vin')}`;
   if (!list.length) { $('#cave-list').innerHTML = `<div class="empty">${icon('search')}<b>Aucun vin trouvé</b>Essaie un autre mot ou retire un filtre.</div>`; return; }
 
-  let html = '', grp = '';
-  list.forEach(b => {
-    const g = `Zone ${b.zone} · ${b.cote}`;
+  let html = '', grp = null;
+  list.forEach(w => {
+    const g = S.grp(w);
     if (g !== grp) { grp = g; html += `<div class="group">${esc(g)}</div>`; }
-    html += cardHtml(b);
+    html += wineCardHtml(w, S.meta(w));
   });
   $('#cave-list').innerHTML = html;
 }
@@ -536,7 +600,7 @@ $('#v-zones').onclick = e => {
   const p = e.target.closest('.place'); if (p) return openZone(p.dataset.z, p.dataset.c);
   if (e.target.closest('#z-back')) { if (history.state && history.state.zone) history.back(); else closeZone(); return; }
   if (e.target.closest('#z-add')) { renderAdd({ zone: ZSEL.zone, cote: ZSEL.cote, nb: 1 }); showView('add'); return; }
-  const c = e.target.closest('.card'); if (c) showBottle(Number(c.dataset.row));
+  const c = e.target.closest('.card'); if (c) { const b = D.bottles.find(x => x.row === Number(c.dataset.row)); if (b) showWine(wineKey(b), true); }
 };
 // Bouton « retour » du téléphone : revient à la grille des zones au lieu de quitter l'app
 window.addEventListener('popstate', () => { if (ZSEL) closeZone(); });
@@ -557,36 +621,108 @@ function closeSheet() {
   sheetTimer = setTimeout(() => { s.hidden = true; }, 300);
 }
 
-function showBottle(row) {
-  const b = D.bottles.find(x => x.row === row); if (!b) return;
-  const k = kind(b);
-  openSheet(`
-    <div class="label k-${k}">
-      <svg class="wm" viewBox="0 0 320 180" preserveAspectRatio="xMidYMax meet" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#r-${regionVisual(b.region)}"/></svg>
-      <div class="lab-reg">${esc(b.region)}${b.region && b.couleur ? ' · ' : ''}${esc(b.couleur)}</div>
-      <div class="lab-dom">${esc(b.domaine)}</div>
-      <div class="lab-app">${esc(b.appellation)}</div>
-      ${b.cuvee ? `<div class="lab-cuv">${esc(b.cuvee)}</div>` : ''}
-      <div class="lab-vint">${esc(b.millesime || 'NM')}</div>
+function labelHtml(w) {
+  return `<div class="label k-${kind(w)}">
+      <svg class="wm" viewBox="0 0 320 180" preserveAspectRatio="xMidYMax meet" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><use href="#r-${regionVisual(w.region)}"/></svg>
+      <div class="lab-reg">${esc(w.region)}${w.region && w.couleur ? ' · ' : ''}${esc(w.couleur)}</div>
+      <div class="lab-dom">${esc(w.domaine)}</div>
+      <div class="lab-app">${esc(w.appellation)}</div>
+      ${w.cuvee ? `<div class="lab-cuv">${esc(w.cuvee)}</div>` : ''}
+      <div class="lab-vint">${esc(w.millesime || 'NM')}</div>
       <div class="lab-orn"></div>
-    </div>
-    <div class="facts">
-      <div>${icon('pin')}Zone ${esc(b.zone)} · ${esc(b.cote)}</div>
-      <div><svg class="btl k-${k}" viewBox="0 0 16 40" style="width:9px;height:22px" aria-hidden="true"><use href="#i-bottle"/></svg>${plural(b.nb, 'bouteille')}</div>
-    </div>
-    <button class="btn" id="b-drink">${icon('glass')}J'ouvre une bouteille</button>
-    <div class="row"><button class="btn ghost" id="b-plus">${icon('plus')}1 bouteille</button><button class="btn ghost" id="b-edit">${icon('edit')}Modifier</button></div>`);
-  $('#b-drink').onclick = () => drinkForm(b);
-  $('#b-plus').onclick = () => save('updateBottle', [b.row, keyOf(b), { ...b, nb: b.nb + 1 }], 'Bouteille ajoutée');
-  $('#b-edit').onclick = () => {
-    openSheet('<h2>Modifier</h2>' + wineForm(b, true));
-    bindWineForm($('#sheet-panel'), o => save('updateBottle', [b.row, keyOf(b), o], o.nb > 0 ? 'Modifié' : 'Retiré de la cave'));
-  };
+    </div>`;
+}
+const placeName = p => `Zone ${p.zone} · ${p.cote}`;
+
+function showWine(key, open) {
+  const w = findWine(key); if (!w) return closeSheet();
+  openSheet(`${labelHtml(w)}
+    <button class="count" id="w-count" aria-expanded="${open ? 'true' : 'false'}">
+      <svg class="btl k-${kind(w)}" viewBox="0 0 16 40" style="width:9px;height:22px" aria-hidden="true"><use href="#i-bottle"/></svg>
+      <b>${plural(w.nb, 'bouteille')}</b><span>${w.locs.length > 1 ? plural(w.locs.length, 'emplacement') : 'Où est-elle ?'}</span>${icon('chev')}</button>
+    <div class="locs" id="w-locs" ${open ? '' : 'hidden'}>${w.locs.map(l => `<button class="loc" data-z="${esc(l.zone)}" data-c="${esc(l.cote)}">${icon('pin')}<span>${esc(placeName(l))}</span><b>${plural(l.nb, 'bouteille')}</b>${icon('chev')}</button>`).join('')}</div>
+    <button class="btn" id="w-drink">${icon('glass')}J'ouvre une bouteille</button>
+    <div class="row3"><button class="btn ghost" id="w-plus">${icon('plus')}1 bouteille</button><button class="btn ghost" id="w-move">${icon('move')}Déplacer</button><button class="btn ghost" id="w-edit">${icon('edit')}Modifier</button></div>`);
+  const back = () => showWine(key, true);
+  $('#w-count').onclick = e => { const b = e.currentTarget, l = $('#w-locs'); l.hidden = !l.hidden; b.setAttribute('aria-expanded', String(!l.hidden)); };
+  // Toucher un emplacement ouvre ce casier dans l'onglet Zones
+  $('#w-locs').onclick = e => { const l = e.target.closest('.loc'); if (!l) return; closeSheet(); showView('zones'); openZone(l.dataset.z, l.dataset.c); };
+  $('#w-drink').onclick = () => w.locs.length === 1 ? drinkForm(w.locs[0], back)
+    : pickSheet('Quelle bouteille ouvres-tu ?', 'Elle sera retirée de cet emplacement.',
+      w.locs.map(l => ({ label: placeName(l), hint: plural(l.nb, 'bouteille'), loc: l })), o => drinkForm(o.loc, back), back);
+  $('#w-plus').onclick = () => pickSheet('Où ranges-tu la bouteille ?', esc(`${w.domaine} · ${w.millesime || 'NM'}`), placeOptions(w), o => {
+    if (o.loc) save('updateBottle', [o.loc.row, keyOf(o.loc), { ...o.loc, nb: o.loc.nb + 1 }], `Bouteille ajoutée en ${placeName(o)}`);
+    else save('addBottle', [{ ...descOf(w), zone: o.zone, cote: o.cote, nb: 1 }], `Bouteille ajoutée en ${placeName(o)}`);
+  }, back);
+  $('#w-move').onclick = () => moveFlow(w, back);
+  $('#w-edit').onclick = () => editWine(w, back);
 }
 
-function drinkForm(b) {
-  openSheet(`<h2>Dégustation</h2>
-    <div class="sub">${esc(b.domaine)} · ${esc(b.appellation)} ${esc(b.cuvee)} ${esc(b.millesime)}</div>
+// Choix d'un emplacement : d'abord ceux où le vin se trouve déjà, puis les autres du casier
+function placeOptions(w, exclude) {
+  const all = []; Object.entries(CASIER).forEach(([z, cs]) => cs.forEach(c => all.push({ zone: z, cote: c })));
+  const same = p => q => q.zone === p.zone && q.cote === p.cote;
+  const here = w.locs.filter(l => !(exclude && same(exclude)(l)));
+  const others = all.filter(p => !w.locs.some(same(p)) && !(exclude && same(exclude)(p)));
+  const fill = p => D.bottles.filter(same(p)).reduce((s, b) => s + b.nb, 0);
+  const opts = here.map(l => ({ zone: l.zone, cote: l.cote, label: placeName(l), hint: `Ce vin y est déjà (${plural(l.nb, 'bouteille')})`, loc: l }));
+  if (others.length) opts.push({ sep: here.length ? 'Autres emplacements' : 'Emplacements' });
+  others.forEach(p => { const n = fill(p); opts.push({ ...p, label: placeName(p), hint: n ? `${plural(n, 'bouteille')} au total` : 'Vide' }); });
+  return opts;
+}
+
+function pickSheet(title, sub, opts, onPick, back) {
+  openSheet(`<button class="back" id="pk-back">${icon('back')}Retour</button><h2>${title}</h2>${sub ? `<div class="sub">${sub}</div>` : ''}
+    <div class="opts">${opts.map((o, i) => o.sep ? `<div class="group">${esc(o.sep)}</div>`
+      : `<button class="opt" data-i="${i}">${icon('pin')}<span>${esc(o.label)}${o.hint ? `<small>${esc(o.hint)}</small>` : ''}</span>${icon('chev')}</button>`).join('')}</div>`);
+  $('#pk-back').onclick = back;
+  $('#sheet-panel .opts').onclick = e => { const b = e.target.closest('.opt'); if (b) onPick(opts[Number(b.dataset.i)]); };
+}
+
+// Déplacer : d'où (si plusieurs emplacements) → vers où → combien (s'il y en a plusieurs)
+function moveFlow(w, back) {
+  const toWhere = src => {
+    const backHere = () => w.locs.length > 1 ? fromWhere() : back();
+    pickSheet('Vers quel emplacement ?', `Depuis ${esc(placeName(src))}`, placeOptions(w, src), dst => {
+      if (src.nb === 1) return doMove(src, dst, 1);
+      let q = 1;
+      openSheet(`<button class="back" id="mv-back">${icon('back')}Retour</button><h2>Combien de bouteilles ?</h2>
+        <div class="sub">${esc(placeName(src))} → ${esc(placeName(dst))}</div>
+        <div class="qty"><button type="button" id="mv-minus" aria-label="Une de moins">−</button><b id="mv-n">1</b><button type="button" id="mv-plus" aria-label="Une de plus">+</button></div>
+        <div class="meta" style="text-align:center">sur ${plural(src.nb, 'bouteille')} à cet emplacement</div>
+        <button class="btn" id="mv-ok">${icon('move')}Déplacer</button>`);
+      const upd = d => { q = Math.min(src.nb, Math.max(1, q + d)); $('#mv-n').textContent = q; };
+      $('#mv-minus').onclick = () => upd(-1); $('#mv-plus').onclick = () => upd(1);
+      $('#mv-back').onclick = () => toWhere(src);
+      $('#mv-ok').onclick = () => doMove(src, dst, q);
+    }, backHere);
+  };
+  const fromWhere = () => pickSheet('Quelle bouteille déplaces-tu ?', 'Choisis son emplacement actuel.',
+    w.locs.map(l => ({ label: placeName(l), hint: plural(l.nb, 'bouteille'), loc: l })), o => toWhere(o.loc), back);
+  const doMove = (src, dst, q) => saveSeq([
+    // ajout à la destination d'abord : en cas de coupure, aucune bouteille n'est perdue
+    dst.loc ? ['updateBottle', [dst.loc.row, keyOf(dst.loc), { ...dst.loc, nb: dst.loc.nb + q }]] : ['addBottle', [{ ...descOf(w), zone: dst.zone, cote: dst.cote, nb: q }]],
+    ['updateBottle', [src.row, keyOf(src), { ...src, nb: src.nb - q }]]
+  ], `${plural(q, 'bouteille déplacée', 'bouteilles déplacées')} en ${placeName(dst)}`);
+  w.locs.length > 1 ? fromWhere() : toWhere(w.locs[0]);
+}
+
+// Modifier : la description s'applique à tous les emplacements ; quantité par emplacement (0 = retirer sans la boire)
+function editWine(w, back) {
+  const qtys = `<label>Bouteilles par emplacement</label>${w.locs.map((l, i) => `<div class="locq"><span>${esc(placeName(l))}</span><input type="number" min="0" inputmode="numeric" id="q-${i}" value="${l.nb}" aria-label="Bouteilles en ${esc(placeName(l))}"></div>`).join('')}
+    <div class="meta" style="margin-top:8px">Mettre 0 retire les bouteilles de cet emplacement, sans les ajouter aux bues.</div>`;
+  openSheet(`<button class="back" id="ed-back">${icon('back')}Retour</button><h2>Modifier</h2>` + wineForm(w, 'desc', qtys));
+  $('#ed-back').onclick = back;
+  bindWineForm($('#sheet-panel'), o => {
+    const n = w.locs.map((l, i) => Math.max(0, Math.round(Number($('#q-' + i).value) || 0)));
+    return saveSeq(w.locs.map((l, i) => ['updateBottle', [l.row, keyOf(l), { ...o, zone: l.zone, cote: l.cote, nb: n[i] }]]),
+      n.every(x => x === 0) ? 'Retiré de la cave' : 'Modifié');
+  });
+}
+
+function drinkForm(b, back) {
+  openSheet(`${back ? `<button class="back" id="d-back">${icon('back')}Retour</button>` : ''}<h2>Dégustation</h2>
+    <div class="sub">${esc(b.domaine)} · ${esc(b.appellation)} ${esc(b.cuvee)} ${esc(b.millesime)}<br>Sortie de ${esc(placeName(b))}</div>
     <div class="row"><div><label for="d-date">Date</label><input type="date" id="d-date" value="${today()}"></div>
       <div><label for="d-note">Note /20</label><input type="number" id="d-note" min="0" max="20" step="0.5" inputmode="decimal" placeholder="ex. 16"></div></div>
     <label>Stade d'évolution</label>
@@ -597,6 +733,7 @@ function drinkForm(b) {
     <button class="btn" id="d-ok">${icon('glass')}Enregistrer et retirer de la cave</button>`);
   const seg = id => { const el = $(id); el.onclick = e => { if (e.target.tagName !== 'BUTTON') return; const on = e.target.classList.contains('on'); el.querySelectorAll('button').forEach(x => x.classList.remove('on')); if (!on) e.target.classList.add('on'); }; return () => (el.querySelector('.on') || {}).textContent || ''; };
   const stade = seg('#d-stade'), rach = seg('#d-rach');
+  if (back) $('#d-back').onclick = back;
   $('#d-ok').onclick = () => {
     const note = $('#d-note').value;
     if (note !== '' && (note < 0 || note > 20)) return toast('La note doit être entre 0 et 20');
@@ -611,11 +748,18 @@ async function save(fn, args, msg) {
   finally { btns.forEach(x => x.disabled = false); }
 }
 
+async function saveSeq(calls, msg) {
+  const btns = document.querySelectorAll('.sheet .btn'); btns.forEach(x => x.disabled = true);
+  try { let d; for (const [fn, args] of calls) d = await run(fn, ...args); setData(d); closeSheet(); toast(msg); return true; }
+  catch (e) { fail(e); try { setData(await run('getData')); } catch (_) {} return false; }
+  finally { btns.forEach(x => x.disabled = false); }
+}
+
 /* ---------- Formulaire vin ---------- */
-function wineForm(o, edit) {
+function wineForm(o, edit, extra) {
   o = o || { zone: '1', cote: 'Avant', nb: 1 };
   const v = k => esc(o[k] ?? '');
-  const id = edit ? 'e' : 'a';
+  const id = edit ? 'e' : 'a', desc = edit === 'desc';
   return `<form class="wf" autocomplete="off">
     <label for="${id}-dom">Domaine *</label><input id="${id}-dom" name="domaine" list="dl-domaine" value="${v('domaine')}" required>
     <label for="${id}-app">Appellation</label><input id="${id}-app" name="appellation" list="dl-appellation" value="${v('appellation')}">
@@ -623,23 +767,23 @@ function wineForm(o, edit) {
     <div class="row"><div><label for="${id}-coul">Couleur</label><input id="${id}-coul" name="couleur" list="dl-couleur" value="${v('couleur')}"></div>
       <div><label for="${id}-mil">Millésime</label><input id="${id}-mil" name="millesime" inputmode="numeric" maxlength="4" value="${v('millesime')}" placeholder="vide = NM"></div></div>
     <label for="${id}-reg">Région</label><input id="${id}-reg" name="region" list="dl-region" value="${v('region')}">
-    <div class="row">
+    ${desc ? extra || '' : `<div class="row">
       <div><label for="${id}-z">Zone</label><select id="${id}-z" name="zone">${[1, 2, 3, 4, 5].map(z => `<option ${String(o.zone) === String(z) ? 'selected' : ''}>${z}</option>`).join('')}</select></div>
       <div><label for="${id}-c">Côté</label><select id="${id}-c" name="cote">${['Avant', 'Arrière'].map(c => `<option ${o.cote === c ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
-      <div><label for="${id}-nb">Bouteilles</label><input id="${id}-nb" name="nb" type="number" min="${edit ? 0 : 1}" inputmode="numeric" value="${v('nb')}"></div>
-    </div>
-    ${edit ? '<div class="meta" style="margin-top:8px">Mettre 0 bouteille retire ce vin de la cave (sans l\'ajouter aux bues).</div>' : ''}
+      <div><label for="${id}-nb">Bouteilles</label><input id="${id}-nb" name="nb" type="number" min="1" inputmode="numeric" value="${v('nb')}"></div>
+    </div>`}
     <button class="btn" type="submit">${edit ? 'Enregistrer' : icon('plus') + 'Ajouter à la cave'}</button></form>`;
 }
 
 function bindWineForm(root, onSubmit) {
   const f = root.querySelector('form.wf');
   const syncCote = () => {
+    if (!f.zone) return;
     const ok = CASIER[f.zone.value] || ['Avant', 'Arrière'];
     [...f.cote.options].forEach(o => { o.disabled = !ok.includes(o.value); });
     if (!ok.includes(f.cote.value)) f.cote.value = ok[0];
   };
-  f.zone.addEventListener('change', syncCote); syncCote();
+  if (f.zone) f.zone.addEventListener('change', syncCote); syncCote();
   // Domaine déjà connu : on pré-remplit la région si elle est vide
   f.domaine.addEventListener('change', () => {
     const known = D.bottles.concat(D.drunk).find(b => b.domaine === f.domaine.value);
@@ -649,7 +793,7 @@ function bindWineForm(root, onSubmit) {
     e.preventDefault();
     const o = Object.fromEntries(new FormData(f).entries());
     if (o.millesime && !/^\d{4}$/.test(o.millesime)) return toast('Millésime : 4 chiffres (ou vide)');
-    o.nb = Number(o.nb);
+    if ('nb' in o) o.nb = Number(o.nb);
     if (await onSubmit(o) && f.closest('#v-add')) renderAdd();
   };
 }
@@ -763,7 +907,7 @@ function renderStats() {
     <div class="view-title">Statistiques</div>
     <div class="kpis">
       <div class="kpi"><b>${total}</b><span>bouteilles</span></div>
-      <div class="kpi"><b>${B.length}</b><span>références</span></div>
+      <div class="kpi"><b>${wines().length}</b><span>vins</span></div>
       <div class="kpi"><b>${new Set(B.map(b => b.domaine)).size}</b><span>domaines</span></div>
       <div class="kpi"><b>${years.length ? Math.min(...years) + '–' + String(Math.max(...years)).slice(2) : '–'}</b><span>millésimes</span></div>
     </div>
@@ -818,9 +962,9 @@ document.querySelectorAll('nav button').forEach(btn => btn.onclick = () => {
 });
 $('#q').oninput = e => { F.q = e.target.value; renderCave(); };
 $('#f-region').onchange = e => { F.region = e.target.value; renderCave(); };
-$('#f-zone').onchange = e => { F.zone = e.target.value; renderCave(); };
+$('#f-sort').onchange = e => { F.sort = e.target.value; store.set('cave-sort', F.sort); renderCave(); };
 $('#f-couleur').onclick = e => { const c = e.target.closest('.chip'); if (!c) return; F.couleur = c.dataset.c; setData(D); };
-$('#cave-list').onclick = e => { const c = e.target.closest('.card'); if (c) showBottle(Number(c.dataset.row)); };
+$('#cave-list').onclick = e => { const c = e.target.closest('.card'); if (c) showWine(c.dataset.w); };
 $('.sheet-bg').onclick = closeSheet;
 $('#refresh').onclick = load;
 
