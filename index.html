@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ma cave à vin</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#7b1e2b">
+<style>
+:root{
+  --bg:#f6f1ec; --card:#fff; --ink:#2a1f1d; --muted:#7d6c67; --line:#e7ddd5;
+  --accent:#7b1e2b; --accent-soft:#f3e3e3; --ok:#2f7a4d;
+  --rouge:#8e1b2c; --blanc:#d8b24a; --rose:#e48aa0; --champ:#b9a35a; --autre:#8a7cb0;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#171212; --card:#231b1a; --ink:#f2eae7; --muted:#a8968f; --line:#3a2e2c;
+  --accent:#d0566a; --accent-soft:#3a2426;
+}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{position:sticky;top:0;z-index:5;background:var(--accent);color:#fff;padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
+header h1{margin:0;font-size:20px;font-weight:600}
+header button{background:none;border:0;color:#fff;font-size:22px;padding:4px 8px}
+main{padding:12px 16px 96px;max-width:720px;margin:0 auto}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:5}
+nav button{flex:1;border:0;background:none;color:var(--muted);padding:10px 0 8px;font-size:12px;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button span{font-size:20px}
+nav button.on{color:var(--accent);font-weight:600}
+input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+textarea{min-height:70px;resize:vertical}
+label{display:block;font-size:13px;color:var(--muted);margin:10px 0 4px}
+.row{display:flex;gap:10px}.row>*{flex:1;min-width:0}
+.btn{display:block;width:100%;border:0;border-radius:12px;padding:13px;font:inherit;font-weight:600;background:var(--accent);color:#fff;margin-top:14px}
+.btn.ghost{background:var(--accent-soft);color:var(--accent)}
+.btn:disabled{opacity:.5}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:10px 0 4px;scrollbar-width:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:14px}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.summary{color:var(--muted);font-size:14px;margin:8px 0}
+.group{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin:18px 0 6px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px;display:flex;gap:12px;align-items:flex-start}
+.card.tap{cursor:pointer}
+.dot{flex:none;width:12px;height:12px;border-radius:50%;margin-top:5px;background:var(--autre)}
+.dot.rouge{background:var(--rouge)}.dot.blanc{background:var(--blanc)}.dot.rose{background:var(--rose)}.dot.champagne{background:var(--champ)}
+.grow{flex:1;min-width:0}
+.t{font-weight:600}
+.s{color:var(--muted);font-size:14px}
+.badge{flex:none;font-weight:700;font-size:14px;background:var(--accent-soft);color:var(--accent);border-radius:8px;padding:2px 8px}
+.tag{display:inline-block;font-size:12px;border-radius:6px;padding:1px 6px;background:var(--accent-soft);color:var(--accent);margin-right:4px}
+.empty{text-align:center;color:var(--muted);padding:40px 0}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+.kpi b{display:block;font-size:24px}
+.kpi span{font-size:13px;color:var(--muted)}
+.bar{display:flex;align-items:center;gap:8px;font-size:14px;margin:6px 0}
+.bar .l{width:42%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bar .track{flex:1;height:10px;background:var(--accent-soft);border-radius:5px;overflow:hidden}
+.bar .fill{height:100%;background:var(--accent)}
+.bar .n{width:28px;text-align:right;font-weight:600}
+h2{font-size:17px;margin:20px 0 8px}
+.sheet{position:fixed;inset:0;z-index:10}
+.sheet-bg{position:absolute;inset:0;background:rgba(0,0,0,.45)}
+.sheet-panel{position:absolute;left:0;right:0;bottom:0;max-height:90vh;overflow:auto;background:var(--bg);border-radius:18px 18px 0 0;padding:8px 16px calc(20px + env(safe-area-inset-bottom));max-width:720px;margin:0 auto}
+.grip{width:40px;height:4px;border-radius:2px;background:var(--line);margin:4px auto 10px}
+.seg{display:flex;gap:6px}.seg button{flex:1;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:9px 4px;font:inherit;font-size:14px}
+.seg button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+#toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:#2a1f1d;color:#fff;padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20;max-width:90vw}
+#toast.show{opacity:1}
+#loading{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:30;color:var(--muted)}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<header><h1>🍷 Ma cave</h1><div><button id="refresh" aria-label="Actualiser">↻</button><button id="settings" aria-label="Réglages">⚙️</button></div></header>
+
+<div id="setup" hidden>
+  <main>
+    <h2>Connexion à ta feuille</h2>
+    <p class="s">À faire une seule fois sur cet appareil. Colle l'adresse de ton script Apps Script (elle finit par <b>/exec</b>) et ta clé secrète.</p>
+    <label>Adresse du script</label><input id="cfg-url" type="url" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off">
+    <label>Clé secrète</label><input id="cfg-key" type="text" autocomplete="off" autocapitalize="off" spellcheck="false">
+    <button class="btn" id="cfg-ok">Se connecter</button>
+    <button class="btn ghost" id="cfg-cancel" hidden>Annuler</button>
+  </main>
+</div>
+
+<main>
+  <section id="v-cave">
+    <input id="q" type="search" placeholder="Rechercher un domaine, une appellation…">
+    <div class="chips" id="f-couleur"></div>
+    <div class="row">
+      <select id="f-region"><option value="">Toutes les régions</option></select>
+      <select id="f-zone"><option value="">Toutes les zones</option></select>
+    </div>
+    <div class="summary" id="cave-summary"></div>
+    <div id="cave-list"></div>
+  </section>
+
+  <section id="v-add" hidden>
+    <h2>Ajouter des bouteilles</h2>
+    <div id="add-form"></div>
+  </section>
+
+  <section id="v-bues" hidden>
+    <div class="summary" id="bues-summary"></div>
+    <div id="bues-list"></div>
+  </section>
+
+  <section id="v-stats" hidden></section>
+</main>
+
+<nav>
+  <button data-v="cave" class="on"><span>🍾</span>Cave</button>
+  <button data-v="add"><span>➕</span>Ajouter</button>
+  <button data-v="bues"><span>🥂</span>Bues</button>
+  <button data-v="stats"><span>📊</span>Stats</button>
+</nav>
+
+<div id="sheet" class="sheet" hidden><div class="sheet-bg"></div><div class="sheet-panel" id="sheet-panel"></div></div>
+<div id="toast"></div>
+<div id="loading">Chargement de la cave…</div>
+
+<datalist id="dl-couleur"></datalist><datalist id="dl-region"></datalist>
+<datalist id="dl-domaine"></datalist><datalist id="dl-appellation"></datalist><datalist id="dl-cuvee"></datalist>
+
+<script>
+const $ = s => document.querySelector(s);
+const store = {
+  get(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+};
+let CFG = store.get('cave-cfg');
+async function call(cfg, action, args) {
+  let r;
+  try {
+    r = await fetch(cfg.url, { method: 'POST', body: JSON.stringify({ key: cfg.key, action, args }) });
+  } catch (e) { throw new Error('Pas de connexion au script (réseau ou adresse incorrecte).'); }
+  let j;
+  try { j = await r.json(); } catch (e) { throw new Error('Réponse inattendue : vérifie l\'adresse et que le script est déployé pour « Tout le monde ».'); }
+  if (!j.ok) throw new Error(j.error || 'Erreur inconnue');
+  return j.data;
+}
+const run = (action, ...args) => call(CFG, action, args);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+const keyOf = b => [b.zone, b.cote, b.couleur, b.domaine, b.appellation, b.cuvee, b.millesime].join('|');
+const uniq = a => [...new Set(a.filter(Boolean))].sort((x, y) => x.localeCompare(y, 'fr'));
+const today = () => { const d = new Date(); return new Date(d - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); };
+const frDate = s => s ? s.split('-').reverse().join('/') : '';
+const colorCls = c => { const n = norm(c); return n.startsWith('rouge') ? 'rouge' : n.startsWith('blanc') ? 'blanc' : n.startsWith('ros') ? 'rose' : n.startsWith('champ') ? 'champagne' : ''; };
+
+let D = { bottles: [], drunk: [] };
+const F = { q: '', couleur: '', region: '', zone: '' };
+
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2600); }
+function fail(e) { toast('⚠️ ' + (e && e.message ? e.message : e)); }
+
+async function load() {
+  if (!CFG) return showSetup();
+  const cached = store.get('cave-data');
+  if (cached) { setData(cached); $('#loading').hidden = true; toast('Mise à jour…'); }
+  else $('#loading').hidden = false;
+  try { setData(await run('getData')); if (cached) toast('À jour ✓'); } catch (e) { fail(e); }
+  $('#loading').hidden = true;
+}
+
+function showSetup() {
+  $('#loading').hidden = true;
+  $('#setup').hidden = false;
+  document.querySelectorAll('body > main, nav').forEach(x => x.hidden = true);
+  $('#cfg-url').value = CFG ? CFG.url : '';
+  $('#cfg-key').value = CFG ? CFG.key : '';
+  $('#cfg-cancel').hidden = !CFG;
+}
+function hideSetup() {
+  $('#setup').hidden = true;
+  document.querySelectorAll('body > main, nav').forEach(x => x.hidden = false);
+}
+$('#cfg-ok').onclick = async () => {
+  const cfg = { url: $('#cfg-url').value.trim(), key: $('#cfg-key').value.trim() };
+  if (!/^https:\/\/script\.google\.com\/.+\/exec$/.test(cfg.url)) return toast('L\'adresse doit commencer par https://script.google.com/ et finir par /exec');
+  if (!cfg.key) return toast('Colle ta clé secrète');
+  const b = $('#cfg-ok'); b.disabled = true; b.textContent = 'Connexion…';
+  try {
+    const d = await call(cfg, 'getData', []);
+    CFG = cfg; store.set('cave-cfg', cfg); hideSetup(); setData(d); toast('Connecté ✓');
+  } catch (e) { fail(e); }
+  b.disabled = false; b.textContent = 'Se connecter';
+};
+$('#cfg-cancel').onclick = hideSetup;
+$('#settings').onclick = showSetup;
+
+function setData(d) {
+  D = d;
+  store.set('cave-data', d);
+  const fill = (id, vals) => $(id).innerHTML = vals.map(v => `<option value="${esc(v)}">`).join('');
+  const B = D.bottles;
+  fill('#dl-couleur', uniq(['Rouge', 'Blanc', 'Rosé', 'Champagne', ...B.map(b => b.couleur)]));
+  fill('#dl-region', uniq(B.map(b => b.region).concat(D.drunk.map(b => b.region))));
+  fill('#dl-domaine', uniq(B.map(b => b.domaine).concat(D.drunk.map(b => b.domaine))));
+  fill('#dl-appellation', uniq(B.map(b => b.appellation).concat(D.drunk.map(b => b.appellation))));
+  fill('#dl-cuvee', uniq(B.map(b => b.cuvee)));
+
+  const couleurs = uniq(B.map(b => b.couleur));
+  if (F.couleur && !couleurs.includes(F.couleur)) F.couleur = '';
+  $('#f-couleur').innerHTML = ['', ...couleurs].map(c =>
+    `<button class="chip ${F.couleur === c ? 'on' : ''}" data-c="${esc(c)}">${c ? esc(c) : 'Toutes'}</button>`).join('');
+
+  const setOpts = (id, first, vals, cur, label) => {
+    $(id).innerHTML = `<option value="">${first}</option>` + vals.map(v => `<option value="${esc(v)}" ${v === cur ? 'selected' : ''}>${esc(label ? label(v) : v)}</option>`).join('');
+  };
+  setOpts('#f-region', 'Toutes les régions', uniq(B.map(b => b.region)), F.region);
+  setOpts('#f-zone', 'Toutes les zones', uniq(B.map(b => b.zone)), F.zone, z => 'Zone ' + z);
+
+  renderCave(); renderBues(); renderStats();
+  if (!$('#add-form').innerHTML) renderAdd();
+}
+
+/* ---------- Cave ---------- */
+function renderCave() {
+  const q = norm(F.q).split(/\s+/).filter(Boolean);
+  const list = D.bottles.filter(b =>
+    (!F.couleur || b.couleur === F.couleur) && (!F.region || b.region === F.region) && (!F.zone || b.zone === F.zone) &&
+    q.every(w => norm([b.domaine, b.appellation, b.cuvee, b.region, b.millesime, b.couleur].join(' ')).includes(w))
+  ).sort((a, b) => (a.zone - b.zone) || (a.cote === b.cote ? 0 : a.cote === 'Avant' ? -1 : 1) || a.domaine.localeCompare(b.domaine, 'fr') || String(a.millesime).localeCompare(String(b.millesime)));
+
+  const n = list.reduce((s, b) => s + b.nb, 0);
+  $('#cave-summary').textContent = `${n} bouteille${n > 1 ? 's' : ''} · ${list.length} référence${list.length > 1 ? 's' : ''}`;
+  if (!list.length) { $('#cave-list').innerHTML = '<div class="empty">Aucune bouteille ne correspond.</div>'; return; }
+
+  let html = '', grp = '';
+  list.forEach(b => {
+    const g = `Zone ${b.zone} · ${b.cote}`;
+    if (g !== grp) { grp = g; html += `<div class="group">${esc(g)}</div>`; }
+    html += `<div class="card tap" data-row="${b.row}">
+      <div class="dot ${colorCls(b.couleur)}"></div>
+      <div class="grow"><div class="t">${esc(b.domaine)}</div>
+        <div class="s">${esc(b.appellation)}${b.cuvee ? ' — ' + esc(b.cuvee) : ''}</div>
+        <div class="s">${esc(b.millesime || 'NM')} · ${esc(b.region)}</div></div>
+      <div class="badge">×${b.nb}</div></div>`;
+  });
+  $('#cave-list').innerHTML = html;
+}
+
+/* ---------- Fiche bouteille ---------- */
+function openSheet(html) { $('#sheet-panel').innerHTML = '<div class="grip"></div>' + html; $('#sheet').hidden = false; }
+function closeSheet() { $('#sheet').hidden = true; }
+
+function showBottle(row) {
+  const b = D.bottles.find(x => x.row === row); if (!b) return;
+  openSheet(`
+    <div class="card"><div class="dot ${colorCls(b.couleur)}"></div><div class="grow">
+      <div class="t">${esc(b.domaine)}</div>
+      <div>${esc(b.appellation)}${b.cuvee ? ' — ' + esc(b.cuvee) : ''}</div>
+      <div class="s">${esc(b.couleur)} · ${esc(b.region)} · ${esc(b.millesime || 'NM')}</div>
+      <div class="s">📍 Zone ${esc(b.zone)}, ${esc(b.cote.toLowerCase())}</div></div>
+      <div class="badge">×${b.nb}</div></div>
+    <button class="btn" id="b-drink">🍷 J'ouvre une bouteille</button>
+    <div class="row"><button class="btn ghost" id="b-plus">+1 bouteille</button><button class="btn ghost" id="b-edit">✏️ Modifier</button></div>`);
+  $('#b-drink').onclick = () => drinkForm(b);
+  $('#b-plus').onclick = () => save('updateBottle', [b.row, keyOf(b), { ...b, nb: b.nb + 1 }], 'Bouteille ajoutée');
+  $('#b-edit').onclick = () => {
+    openSheet('<h2>Modifier</h2>' + wineForm(b, true));
+    bindWineForm($('#sheet-panel'), o => save('updateBottle', [b.row, keyOf(b), o], o.nb > 0 ? 'Modifié' : 'Supprimé de la cave'));
+  };
+}
+
+function drinkForm(b) {
+  openSheet(`<h2>Dégustation</h2>
+    <div class="s">${esc(b.domaine)} — ${esc(b.appellation)} ${esc(b.cuvee)} ${esc(b.millesime)}</div>
+    <div class="row"><div><label>Date</label><input type="date" id="d-date" value="${today()}"></div>
+      <div><label>Note /20</label><input type="number" id="d-note" min="0" max="20" step="0.5" inputmode="decimal" placeholder="ex. 16"></div></div>
+    <label>Stade d'évolution</label>
+    <div class="seg" id="d-stade">${['Trop jeune', 'À point', 'Sur le déclin'].map(s => `<button type="button">${s}</button>`).join('')}</div>
+    <label>À racheter ?</label>
+    <div class="seg" id="d-rach"><button type="button">Oui</button><button type="button">Non</button></div>
+    <label>Commentaire</label><textarea id="d-com" placeholder="Accord, impressions…"></textarea>
+    <button class="btn" id="d-ok">Enregistrer et retirer de la cave</button>`);
+  const seg = id => { const el = $(id); el.onclick = e => { if (e.target.tagName !== 'BUTTON') return; const on = e.target.classList.contains('on'); el.querySelectorAll('button').forEach(x => x.classList.remove('on')); if (!on) e.target.classList.add('on'); }; return () => (el.querySelector('.on') || {}).textContent || ''; };
+  const stade = seg('#d-stade'), rach = seg('#d-rach');
+  $('#d-ok').onclick = () => {
+    const note = $('#d-note').value;
+    if (note !== '' && (note < 0 || note > 20)) return toast('La note doit être entre 0 et 20');
+    save('drinkBottle', [b.row, keyOf(b), { date: $('#d-date').value, note, stade: stade(), racheter: rach(), commentaire: $('#d-com').value.trim() }], 'Santé ! 🥂');
+  };
+}
+
+async function save(fn, args, msg) {
+  const btns = document.querySelectorAll('.sheet .btn, #v-add .btn'); btns.forEach(x => x.disabled = true);
+  try { setData(await run(fn, ...args)); closeSheet(); toast(msg); return true; }
+  catch (e) { fail(e); return false; }
+  finally { btns.forEach(x => x.disabled = false); }
+}
+
+/* ---------- Formulaire vin ---------- */
+function wineForm(o, edit) {
+  o = o || { zone: '1', cote: 'Avant', nb: 1 };
+  const v = k => esc(o[k] ?? '');
+  return `<form class="wf" autocomplete="off">
+    <label>Domaine *</label><input name="domaine" list="dl-domaine" value="${v('domaine')}" required>
+    <label>Appellation</label><input name="appellation" list="dl-appellation" value="${v('appellation')}">
+    <label>Cuvée</label><input name="cuvee" list="dl-cuvee" value="${v('cuvee')}">
+    <div class="row"><div><label>Couleur</label><input name="couleur" list="dl-couleur" value="${v('couleur')}"></div>
+      <div><label>Millésime</label><input name="millesime" inputmode="numeric" maxlength="4" value="${v('millesime')}" placeholder="vide = NM"></div></div>
+    <label>Région</label><input name="region" list="dl-region" value="${v('region')}">
+    <div class="row">
+      <div><label>Zone</label><select name="zone">${[1, 2, 3, 4, 5].map(z => `<option ${String(o.zone) === String(z) ? 'selected' : ''}>${z}</option>`).join('')}</select></div>
+      <div><label>Côté</label><select name="cote">${['Avant', 'Arrière'].map(c => `<option ${o.cote === c ? 'selected' : ''}>${c}</option>`).join('')}</select></div>
+      <div><label>Bouteilles</label><input name="nb" type="number" min="${edit ? 0 : 1}" inputmode="numeric" value="${v('nb')}"></div>
+    </div>
+    ${edit ? '<div class="s" style="margin-top:6px">Mettre 0 bouteille retire ce vin de la cave (sans l\'ajouter aux bues).</div>' : ''}
+    <button class="btn" type="submit">${edit ? 'Enregistrer' : 'Ajouter à la cave'}</button></form>`;
+}
+
+function bindWineForm(root, onSubmit) {
+  const f = root.querySelector('form.wf');
+  // Domaine déjà connu : on pré-remplit la région si elle est vide
+  f.domaine.addEventListener('change', () => {
+    const known = D.bottles.concat(D.drunk).find(b => b.domaine === f.domaine.value);
+    if (known && !f.region.value) f.region.value = known.region;
+  });
+  f.onsubmit = async e => {
+    e.preventDefault();
+    const o = Object.fromEntries(new FormData(f).entries());
+    if (o.millesime && !/^\d{4}$/.test(o.millesime)) return toast('Millésime : 4 chiffres (ou vide)');
+    o.nb = Number(o.nb);
+    if (await onSubmit(o) && f.closest('#v-add')) renderAdd();
+  };
+}
+
+function renderAdd() {
+  $('#add-form').innerHTML = wineForm(null, false);
+  bindWineForm($('#add-form'), o => save('addBottle', [o], `${o.nb} bouteille${o.nb > 1 ? 's' : ''} ajoutée${o.nb > 1 ? 's' : ''}`));
+}
+
+/* ---------- Bues ---------- */
+function renderBues() {
+  const l = D.drunk.slice().sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  const notes = l.filter(b => b.note !== '');
+  const avg = notes.length ? (notes.reduce((s, b) => s + b.note, 0) / notes.length).toFixed(1).replace('.', ',') : '–';
+  $('#bues-summary').textContent = `${l.length} bouteille${l.length > 1 ? 's' : ''} bue${l.length > 1 ? 's' : ''} · note moyenne ${avg}/20`;
+  $('#bues-list').innerHTML = l.length ? l.map(b => `<div class="card">
+      <div class="dot ${colorCls(b.couleur)}"></div>
+      <div class="grow"><div class="t">${esc(b.domaine)}</div>
+        <div class="s">${esc(b.appellation)}${b.cuvee ? ' — ' + esc(b.cuvee) : ''} · ${esc(b.millesime || 'NM')}</div>
+        <div class="s">${frDate(b.date)}</div>
+        <div style="margin-top:4px">${b.stade ? `<span class="tag">${esc(b.stade)}</span>` : ''}${b.racheter === 'Oui' ? '<span class="tag">🛒 À racheter</span>' : ''}</div>
+        ${b.commentaire ? `<div class="s" style="margin-top:4px">« ${esc(b.commentaire)} »</div>` : ''}</div>
+      ${b.note !== '' ? `<div class="badge">${String(b.note).replace('.', ',')}</div>` : ''}</div>`).join('')
+    : '<div class="empty">Pas encore de bouteille bue.<br>Ouvre une fiche dans la cave et touche « J\'ouvre une bouteille ».</div>';
+}
+
+/* ---------- Stats ---------- */
+function bars(map) {
+  const e = Object.entries(map).sort((a, b) => b[1] - a[1]); const max = Math.max(1, ...e.map(x => x[1]));
+  return e.map(([k, n]) => `<div class="bar"><div class="l">${esc(k)}</div><div class="track"><div class="fill" style="width:${n / max * 100}%"></div></div><div class="n">${n}</div></div>`).join('');
+}
+function renderStats() {
+  const B = D.bottles, sum = f => B.reduce((m, b) => (m[f(b) || '—'] = (m[f(b) || '—'] || 0) + b.nb, m), {});
+  const total = B.reduce((s, b) => s + b.nb, 0);
+  const mills = B.map(b => Number(b.millesime)).filter(Boolean);
+  const notes = D.drunk.filter(b => b.note !== '');
+  const avg = notes.length ? (notes.reduce((s, b) => s + b.note, 0) / notes.length).toFixed(1).replace('.', ',') : '–';
+  const rach = D.drunk.filter(b => b.racheter === 'Oui');
+  $('#v-stats').innerHTML = `
+    <div class="kpis">
+      <div class="kpi"><b>${total}</b><span>bouteilles</span></div>
+      <div class="kpi"><b>${new Set(B.map(b => b.domaine)).size}</b><span>domaines</span></div>
+      <div class="kpi"><b>${mills.length ? Math.min(...mills) + '–' + Math.max(...mills) : '–'}</b><span>millésimes</span></div>
+      <div class="kpi"><b>${D.drunk.length} · ${avg}</b><span>bues · note moy.</span></div>
+    </div>
+    <h2>Par couleur</h2>${bars(sum(b => b.couleur))}
+    <h2>Par région</h2>${bars(sum(b => b.region))}
+    <h2>Par zone</h2>${bars(sum(b => 'Zone ' + b.zone))}
+    <h2>Par millésime</h2>${bars(sum(b => b.millesime || 'NM'))}
+    ${rach.length ? `<h2>🛒 À racheter</h2>${rach.map(b => `<div class="card"><div class="dot ${colorCls(b.couleur)}"></div><div class="grow"><div class="t">${esc(b.domaine)}</div><div class="s">${esc(b.appellation)} ${esc(b.cuvee)} ${esc(b.millesime)}</div></div></div>`).join('')}` : ''}`;
+}
+
+/* ---------- Événements ---------- */
+document.querySelectorAll('nav button').forEach(btn => btn.onclick = () => {
+  document.querySelectorAll('nav button').forEach(x => x.classList.toggle('on', x === btn));
+  ['cave', 'add', 'bues', 'stats'].forEach(v => $('#v-' + v).hidden = v !== btn.dataset.v);
+  window.scrollTo(0, 0);
+});
+$('#q').oninput = e => { F.q = e.target.value; renderCave(); };
+$('#f-region').onchange = e => { F.region = e.target.value; renderCave(); };
+$('#f-zone').onchange = e => { F.zone = e.target.value; renderCave(); };
+$('#f-couleur').onclick = e => { const c = e.target.closest('.chip'); if (!c) return; F.couleur = c.dataset.c; setData(D); };
+$('#cave-list').onclick = e => { const c = e.target.closest('.card'); if (c) showBottle(Number(c.dataset.row)); };
+$('.sheet-bg').onclick = closeSheet;
+$('#refresh').onclick = load;
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+load();
+</script>
+</body>
+</html>
