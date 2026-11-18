@@ -49,6 +49,9 @@ h2{font:600 20px/1.2 var(--serif);margin:24px 0 10px}
 
 /* Champs */
 input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:10px;padding:11px 12px;outline:none;transition:border-color .15s,box-shadow .15s}
+select{-webkit-appearance:none;appearance:none;padding-right:34px;text-overflow:ellipsis;
+  background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);
+  background-position:calc(100% - 19px) 52%,calc(100% - 14px) 52%;background-size:5px 5px;background-repeat:no-repeat}
 input:focus,select:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-soft)}
 textarea{min-height:76px;resize:vertical}
 label{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:14px 0 5px}
@@ -71,7 +74,7 @@ label{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
 .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
 .chip .sw{width:9px;height:9px;border-radius:50%;background:var(--c)}
 .filters{display:flex;gap:8px;margin-top:8px}.filters>*{flex:1;min-width:0}
-.filters select{padding:8px 10px;font-size:14px;border-radius:999px}
+.filters select{padding:8px 32px 8px 14px;font-size:14px;border-radius:999px}
 .summary{color:var(--muted);font-size:13px;margin:12px 0 4px;font-variant-numeric:lining-nums tabular-nums}
 
 /* Séparateur façon étiquette */
@@ -176,20 +179,27 @@ label{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
 .dleg span{flex:1;min-width:0}
 .dleg b{font-variant-numeric:lining-nums tabular-nums;font-weight:600}
 .dleg em{font-style:normal;color:var(--muted);font-size:12px;width:34px;text-align:right;font-variant-numeric:lining-nums tabular-nums}
-.colchart{position:relative}
+.chart{position:relative}
+.chart .legend{margin:0 0 10px}
 .colchart svg{width:100%;height:auto;display:block;overflow:visible}
-.colchart .bar{fill:var(--accent);pointer-events:none}
+.colchart .seg{fill:var(--c);pointer-events:none}
 .colchart .hit{fill:transparent;cursor:pointer}
-.colchart .hit:hover+.bar,.colchart .bar.hl{fill:var(--gold)}
+.colchart .col,.hbar{transition:opacity .15s}
+.chart.focus .col:not(.hl),.chart.focus .hbar:not(.hl){opacity:.35}
 .colchart .ax{font:500 9px var(--sans);fill:var(--muted);font-variant-numeric:lining-nums tabular-nums}
 .colchart .vl{font:600 11px var(--sans);fill:var(--ink)}
 .colchart .base{stroke:var(--line);stroke-width:1}
-.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;padding:5px 8px;border-radius:6px;white-space:nowrap;transform:translate(-50%,-100%);margin-top:-6px;opacity:0;transition:opacity .12s}
+.tip{position:absolute;z-index:2;pointer-events:none;background:var(--ink);color:var(--bg);font-size:12px;padding:8px 10px;border-radius:8px;white-space:nowrap;transform:translateY(-100%);margin-top:-8px;opacity:0;transition:opacity .12s;box-shadow:0 4px 14px rgba(0,0,0,.2)}
 .tip.on{opacity:1}
-.hbar{display:flex;align-items:center;gap:10px;font-size:14px;margin:8px 0}
-.hbar .l{width:44%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.hbar .t{flex:1;height:8px;background:var(--wash);border-radius:4px;overflow:hidden}
-.hbar .f{height:100%;background:var(--accent);border-radius:0 4px 4px 0;transform-origin:left;animation:grow .6s cubic-bezier(.2,.8,.2,1) both}
+.tip b{display:block;font-size:13px;margin-bottom:4px}
+.tip div{display:flex;align-items:center;gap:6px;line-height:1.6;font-variant-numeric:lining-nums tabular-nums}
+.tip i{width:8px;height:8px;border-radius:50%;background:var(--c);box-shadow:0 0 0 1px rgba(255,255,255,.35)}
+.hbar{display:flex;align-items:center;gap:10px;font-size:14px;padding:4px 0;cursor:pointer}
+.hbar .l{width:42%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hbar .t{flex:1;height:10px;background:var(--wash);border-radius:5px;overflow:hidden}
+.hbar .f{height:100%;display:flex;gap:2px;transform-origin:left;animation:grow .6s cubic-bezier(.2,.8,.2,1) both}
+.hbar .f i{display:block;height:100%;background:var(--c)}
+.hbar .f i:last-child{border-radius:0 5px 5px 0}
 .hbar .n{width:26px;text-align:right;font-weight:600;font-variant-numeric:lining-nums tabular-nums}
 .note-s{font-size:12px;color:var(--muted);margin-top:8px}
 
@@ -642,34 +652,69 @@ function donutHtml(by, total) {
     <div class="dleg">${leg}</div></div>`;
 }
 
+// Infobulles des graphiques : titre + répartition par couleur
+let TIPS = [];
+function addTip(title, by) { TIPS.push({ title, by }); return TIPS.length - 1; }
+function sumBy(by) { return KORDER.reduce((s, k) => s + (by[k] || 0), 0); }
+function chartLegend(kinds) {
+  return `<div class="legend">${kinds.map(k => `<span class="k-${k}"><i></i>${KNAME[k][1][0].toUpperCase() + KNAME[k][1].slice(1)}</span>`).join('')}</div>`;
+}
+
 function colChartHtml(byYear) {
   const years = Object.keys(byYear).map(Number);
   if (!years.length) return '<div class="meta">Aucun millésime renseigné.</div>';
   const min = Math.min(...years), max = Math.max(...years), cols = [];
-  for (let y = min; y <= max; y++) cols.push([y, byYear[y] || 0]);
-  const W = 340, H = 130, top = 16, base = H - 18, step = W / cols.length, bw = Math.max(3, Math.min(22, step - 2));
-  const peak = Math.max(...cols.map(c => c[1]));
+  for (let y = min; y <= max; y++) cols.push([y, byYear[y] || {}]);
+  const W = 340, H = 130, top = 16, base = H - 18, step = W / cols.length, bw = Math.max(3, Math.min(22, step - 2)), GAP = 2;
+  const peak = Math.max(...cols.map(c => sumBy(c[1])));
   const every = cols.length > 18 ? 3 : cols.length > 10 ? 2 : 1;
   let out = `<line class="base" x1="0" x2="${W}" y1="${base + .5}" y2="${base + .5}"/>`;
-  cols.forEach(([y, n], i) => {
-    const x = i * step + (step - bw) / 2, h = n ? Math.max(3, n / peak * (base - top)) : 0, yy = base - h, r = Math.min(4, h, bw / 2);
-    out += `<rect class="hit" x="${i * step}" y="0" width="${step}" height="${H}" data-y="${y}" data-n="${n}"/>`;
-    out += n ? `<path class="bar" d="M${x},${base} V${yy + r} Q${x},${yy} ${x + r},${yy} H${x + bw - r} Q${x + bw},${yy} ${x + bw},${yy + r} V${base} Z"/>` : '<path class="bar"/>';
-    if (n === peak) out += `<text class="vl" x="${x + bw / 2}" y="${yy - 4}" text-anchor="middle">${n}</text>`;
+  cols.forEach(([y, by], i) => {
+    const n = sumBy(by), x = i * step + (step - bw) / 2;
+    const h = n ? Math.max(3, n / peak * (base - top)) : 0;
+    const ks = KORDER.filter(k => by[k]);
+    const avail = h - GAP * Math.max(0, ks.length - 1);
+    let cur = base, segs = '';
+    ks.forEach((k, j) => {
+      const sh = Math.max(1.5, by[k] / n * avail), yy = cur - sh;
+      if (j === ks.length - 1) { // segment du haut : extrémité arrondie
+        const r = Math.min(4, sh, bw / 2);
+        segs += `<path class="seg k-${k}" d="M${x},${cur} V${yy + r} Q${x},${yy} ${x + r},${yy} H${x + bw - r} Q${x + bw},${yy} ${x + bw},${yy + r} V${cur} Z"/>`;
+      } else segs += `<rect class="seg k-${k}" x="${x}" y="${yy}" width="${bw}" height="${sh}"/>`;
+      cur = yy - GAP;
+    });
+    const t = addTip(String(y), by);
+    out += `<g class="col" data-t="${t}"><rect class="hit" x="${i * step}" y="0" width="${step}" height="${H}"/>${segs}</g>`;
+    if (n && n === peak) out += `<text class="vl" x="${x + bw / 2}" y="${base - h - 4}" text-anchor="middle">${n}</text>`;
     if ((y - min) % every === 0 || y === max) out += `<text class="ax" x="${x + bw / 2}" y="${H - 4}" text-anchor="middle">${y}</text>`;
   });
-  return `<div class="colchart"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Bouteilles par millésime">${out}</svg><div class="tip"></div></div>`;
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Bouteilles par millésime et par couleur">${out}</svg>`;
+}
+
+function regionChartHtml(byRegion) {
+  const reg = Object.entries(byRegion).sort((a, b) => sumBy(b[1]) - sumBy(a[1]));
+  if (!reg.length) return '<div class="meta">Aucune région renseignée.</div>';
+  const rmax = sumBy(reg[0][1]);
+  return reg.map(([name, by], i) => {
+    const n = sumBy(by), t = addTip(name, by);
+    const parts = KORDER.filter(k => by[k]).map(k => `<i class="k-${k}" style="flex:${by[k]} 1 0"></i>`).join('');
+    return `<div class="hbar" data-t="${t}"><div class="l">${esc(name)}</div><div class="t"><div class="f" style="width:${n / rmax * 100}%;animation-delay:${i * 30}ms">${parts}</div></div><div class="n">${n}</div></div>`;
+  }).join('');
 }
 
 function renderStats() {
   const B = D.bottles;
   const total = B.reduce((s, b) => s + b.nb, 0);
   const by = countBy(B);
-  const byYear = {}; let nm = 0;
-  B.forEach(b => { const y = Number(b.millesime); if (y) byYear[y] = (byYear[y] || 0) + b.nb; else nm += b.nb; });
-  const regions = {}; B.forEach(b => { const r = b.region || '—'; regions[r] = (regions[r] || 0) + b.nb; });
-  const reg = Object.entries(regions).sort((a, b) => b[1] - a[1]); const rmax = reg.length ? reg[0][1] : 1;
+  const byYear = {}, byRegion = {}; let nm = 0;
+  B.forEach(b => {
+    const k = kind(b), y = Number(b.millesime), r = b.region || '—';
+    if (y) { byYear[y] = byYear[y] || {}; byYear[y][k] = (byYear[y][k] || 0) + b.nb; } else nm += b.nb;
+    byRegion[r] = byRegion[r] || {}; byRegion[r][k] = (byRegion[r][k] || 0) + b.nb;
+  });
   const years = Object.keys(byYear).map(Number);
+  const kinds = KORDER.filter(k => by[k]);
+  TIPS = [];
   const notes = D.drunk.filter(b => b.note !== '');
   const avg = notes.length ? fmtNote((notes.reduce((s, b) => s + b.note, 0) / notes.length).toFixed(1)) : '–';
   const rach = D.drunk.filter(b => b.racheter === 'Oui');
@@ -683,32 +728,40 @@ function renderStats() {
       <div class="kpi"><b>${years.length ? Math.min(...years) + '–' + String(Math.max(...years)).slice(2) : '–'}</b><span>millésimes</span></div>
     </div>
     <h2>Par couleur</h2><div class="panel">${total ? donutHtml(by, total) : '<div class="meta">Cave vide.</div>'}</div>
-    <h2>Par millésime</h2><div class="panel">${colChartHtml(byYear)}${nm ? `<div class="note-s">Plus ${plural(nm, 'bouteille')} sans millésime.</div>` : ''}<div class="note-s">Touche une colonne pour voir le détail.</div></div>
-    <h2>Par région</h2><div class="panel">${reg.map(([k, n], i) => `<div class="hbar"><div class="l">${esc(k)}</div><div class="t"><div class="f" style="width:${n / rmax * 100}%;animation-delay:${i * 30}ms"></div></div><div class="n">${n}</div></div>`).join('')}</div>
+    <h2>Par millésime</h2><div class="panel chart colchart">${chartLegend(kinds)}${colChartHtml(byYear)}<div class="tip"></div>${nm ? `<div class="note-s">Plus ${plural(nm, 'bouteille')} sans millésime.</div>` : ''}<div class="note-s">Touche un bâton pour voir le détail.</div></div>
+    <h2>Par région</h2><div class="panel chart">${chartLegend(kinds)}${regionChartHtml(byRegion)}<div class="tip"></div><div class="note-s">Touche une région pour voir le détail.</div></div>
     <h2>Dégustations</h2>
     <div class="kpis"><div class="kpi"><b>${D.drunk.length}</b><span>bouteilles bues</span></div><div class="kpi"><b>${avg}</b><span>note moyenne /20</span></div></div>
     ${rach.length ? `<h2>À racheter</h2>${rach.map(b => `<div class="card">${bottleIcon(kind(b))}<div class="grow"><div class="dom">${esc(b.domaine)}</div><div class="app">${esc(b.appellation)}${b.cuvee ? ` <i>· ${esc(b.cuvee)}</i>` : ''}</div></div><div class="vint"><b>${esc(b.millesime || 'NM')}</b></div></div>`).join('')}` : ''}`;
 }
 
-// Infobulle du graphique des millésimes (survol ou toucher)
-function colTip(e) {
-  const hit = e.target.closest && e.target.closest('.hit'); const chart = e.target.closest && e.target.closest('.colchart');
-  document.querySelectorAll('.colchart .bar.hl').forEach(x => x.classList.remove('hl'));
-  if (!chart) return;
-  const tip = chart.querySelector('.tip');
-  if (!hit) { tip.classList.remove('on'); return; }
-  const n = Number(hit.dataset.n);
-  hit.nextElementSibling.classList.add('hl');
-  const cr = chart.getBoundingClientRect(), hr = hit.getBoundingClientRect();
-  tip.textContent = `${hit.dataset.y} · ${n ? plural(n, 'bouteille') : 'aucune bouteille'}`;
-  tip.style.left = Math.min(Math.max(hr.left - cr.left + hr.width / 2, 50), cr.width - 50) + 'px';
-  const bar = hit.nextElementSibling.getBoundingClientRect();
-  tip.style.top = (n ? bar.top - cr.top : hr.bottom - cr.top - 20) + 'px';
-  tip.classList.add('on');
+// Infobulle des graphiques (survol à la souris, toucher sur téléphone)
+function hideTips() {
+  document.querySelectorAll('#v-stats .chart').forEach(c => { c.classList.remove('focus'); c.querySelector('.tip').classList.remove('on'); });
+  document.querySelectorAll('#v-stats .hl').forEach(x => x.classList.remove('hl'));
 }
-$('#v-stats').addEventListener('pointerover', colTip);
-$('#v-stats').addEventListener('click', colTip);
-$('#v-stats').addEventListener('pointerleave', () => document.querySelectorAll('.colchart .tip').forEach(t => t.classList.remove('on')));
+function chartTip(e) {
+  const el = e.target.closest && e.target.closest('#v-stats [data-t]');
+  hideTips();
+  if (!el) return;
+  const chart = el.closest('.chart'), tip = chart.querySelector('.tip'), d = TIPS[Number(el.dataset.t)];
+  if (!d) return;
+  const n = sumBy(d.by);
+  tip.innerHTML = `<b>${esc(d.title)} · ${n ? plural(n, 'bouteille') : 'aucune bouteille'}</b>` +
+    KORDER.filter(k => d.by[k]).map(k => `<div class="k-${k}"><i></i>${plural(d.by[k], KNAME[k][0], KNAME[k][1])}</div>`).join('');
+  el.classList.add('hl'); chart.classList.add('focus');
+  // Position : au-dessus de la barre touchée, sans sortir du cadre
+  const cr = chart.getBoundingClientRect();
+  const segs = [...el.querySelectorAll('.seg, .f')].map(x => x.getBoundingClientRect()).filter(r => r.width && r.height);
+  const ref = segs.length ? segs.reduce((a, r) => ({ left: Math.min(a.left, r.left), right: Math.max(a.right, r.right), top: Math.min(a.top, r.top) }), { left: Infinity, right: -Infinity, top: Infinity }) : el.getBoundingClientRect();
+  tip.classList.add('on');
+  const tw = tip.offsetWidth, cx = (ref.left + ref.right) / 2 - cr.left;
+  tip.style.left = Math.min(Math.max(cx - tw / 2, 4), cr.width - tw - 4) + 'px';
+  tip.style.top = (ref.top - cr.top) + 'px';
+}
+$('#v-stats').addEventListener('pointerover', e => { if (e.pointerType === 'mouse') chartTip(e); });
+$('#v-stats').addEventListener('click', chartTip);
+$('#v-stats').addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') hideTips(); });
 
 /* ---------- Navigation ---------- */
 function animateIn(el) { el.classList.remove('enter'); void el.offsetWidth; el.classList.add('enter'); }
