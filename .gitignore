@@ -1,0 +1,4 @@
+# Données personnelles et fichiers générés : jamais dans ce dépôt public
+outils/apercu/snapshot.json
+outils/apercu/*.html
+outils/visuels/*.html
