@@ -240,7 +240,7 @@ nav button.add .plus{width:54px;height:54px;margin-top:-26px;border-radius:50%;b
 nav button.add:active .plus{transform:scale(.94)}
 nav button.add .plus .ic{width:26px;height:26px;stroke-width:2.2}
 
-#toast{position:fixed;left:50%;bottom:96px;transform:translate(-50%,12px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:999px;font-size:14px;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:20;max-width:90vw}
+#toast{position:fixed;left:50%;bottom:96px;transform:translate(-50%,12px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:16px;font-size:14px;line-height:1.4;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;z-index:20;max-width:90vw}
 #toast.show{opacity:1;transform:translate(-50%,0)}
 #toast.act{pointer-events:auto;display:flex;align-items:center;gap:12px;padding:8px 8px 8px 16px;width:max-content;max-width:calc(100vw - 32px);border-radius:18px}
 #toast.act span{min-width:0}
@@ -411,7 +411,7 @@ const fmtNote = n => String(n).replace('.', ',');
 let D = { bottles: [], drunk: [] };
 const F = { q: '', couleur: '', region: '', sort: store.get('cave-sort') || 'region' };
 
-function toast(msg) { const t = $('#toast'); t.classList.remove('act'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), 2600); }
+function toast(msg, ms) { const t = $('#toast'); t.classList.remove('act'); t.textContent = msg; t.classList.add('show'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('show'), ms || 2600); }
 function toastUndo(msg, onUndo) {
   const t = $('#toast');
   t.innerHTML = `<span>${esc(msg)}</span><button type="button" id="t-undo">Annuler</button>`;
@@ -846,7 +846,8 @@ function inverseOf(d, fn, args) {
   }
   if (fn === 'drinkBottle') {
     const [row, key, t] = args, b = d.bottles[rowIndex(d, row, key)];
-    return [['undoDrink', [{ date: t.date || today(), domaine: b.domaine, appellation: b.appellation, cuvee: b.cuvee, millesime: b.millesime }]], ['addBottle', [{ ...b, nb: 1 }]]];
+    // d'abord remettre la bouteille, ensuite effacer la dégustation : en cas d'échec, aucune bouteille n'est perdue
+    return [['addBottle', [{ ...b, nb: 1 }]], ['undoDrink', [{ date: t.date || today(), domaine: b.domaine, appellation: b.appellation, cuvee: b.cuvee, millesime: b.millesime }]]];
   }
   return [];
 }
@@ -880,6 +881,17 @@ async function sync(silent) {
   finally { SYNCING = false; }
 }
 
+// Ce que fait chaque appel, en clair (pour expliquer un échec en cours de route)
+function stepLabel(fn, args) {
+  const o = fn === 'addBottle' ? args[0] : fn === 'updateBottle' ? args[2] : fn === 'undoDrink' ? args[0] : D.bottles.find(b => keyOf(b) === args[1]) || {};
+  const vin = `${o.domaine || 'le vin'}${o.millesime ? ' ' + o.millesime : ''}`;
+  if (fn === 'addBottle') return `remettre ${vin} en ${placeName(o)}`;
+  if (fn === 'updateBottle') return `mettre à jour ${vin}${o.zone ? ' en ' + placeName(o) : ''}`;
+  if (fn === 'drinkBottle') return `retirer ${vin} de la cave`;
+  if (fn === 'undoDrink') return `effacer la dégustation de ${vin} dans « Bouteilles bues »`;
+  return fn;
+}
+
 async function perform(calls, msg, undoable = true) {
   // 1. Résultat attendu et appels inverses (vérifie aussi les données avant tout envoi)
   let expected = D, inverse = [];
@@ -893,7 +905,13 @@ async function perform(calls, msg, undoable = true) {
     for (; i < calls.length; i++) d = await run(...[calls[i][0], ...calls[i][1]]);
     setData(d);
   } catch (e) {
-    if (!e.net) { fail(e); try { setData(await run('getData')); } catch (_) {} btns.forEach(x => x.disabled = false); return false; }
+    if (!e.net) {
+      // Une étape a échoué : on dit précisément ce qui est fait et ce qui reste à faire
+      if (i > 0) toast(`⚠️ Fait : ${calls.slice(0, i).map(c => stepLabel(...c)).join(', ')}. Pas fait : ${stepLabel(...calls[i])} (${e.message}). À corriger dans ta feuille.`, 12000);
+      else fail(e);
+      try { setData(await run('getData')); } catch (_) {}
+      btns.forEach(x => x.disabled = false); return false;
+    }
     // 2. Pas de réseau : on garde les appels restants et on affiche le résultat attendu
     const rest = calls.slice(i); let st = d || D;
     for (const [fn, args] of rest) st = LOCAL[fn](st, ...args);
