@@ -70,6 +70,18 @@ const API = {
     if (v[8] <= 0) DB.inv.splice(i, 1); else DB.inv[i] = v;
     return API.getData();
   },
+  // Questions simulées (l'aperçu n'interroge pas l'IA)
+  askWine(w, question, kind) {
+    if (!w || !question) throw new Error('Question manquante.');
+    const vin = w.domaine + (w.cuvee ? ' « ' + w.cuvee + ' »' : '') + (w.millesime ? ' ' + w.millesime : '');
+    const T = {
+      accord: 'Réponse simulée pour l’aperçu. Pour ' + vin + ', quelques pistes :\\n- **Viandes rôties** ou gibier à plume\\n- **Fromages affinés** à pâte pressée\\n- Un plat mijoté aux champignons\\nÉvite les plats très épicés ou sucrés, qui écraseraient le vin.',
+      garde: 'Réponse simulée pour l’aperçu. ' + vin + ' se boit idéalement **entre 3 et 10 ans** après le millésime. Il peut s’ouvrir dès maintenant ; un passage en carafe d’une heure l’aidera. Sers-le vers **16 °C**.',
+      achat: 'Réponse simulée pour l’aperçu. On trouve ' + vin + ' chez plusieurs cavistes en ligne, autour de **25 à 35 €** la bouteille. Les millésimes récents sont les plus faciles à trouver.',
+      libre: 'Réponse simulée pour l’aperçu à ta question : « ' + question + ' ». Dans l’app, la vraie réponse s’affichera ici.'
+    };
+    return { texte: T[kind] || T.libre, sources: kind === 'achat' ? [{ titre: 'Exemple de caviste en ligne (simulation)', url: 'https://example.com' }] : [], modele: 'simulation', recherche: kind === 'achat' };
+  },
   // Lecture d'étiquette simulée (l'aperçu n'appelle pas Gemini)
   readLabel(img) {
     if (!img || !img.data) throw new Error('Photo manquante.');
@@ -95,7 +107,7 @@ const API = {
 };
 window.__offline = false;
 async function call(cfg, action, args) {
-  await new Promise(r => setTimeout(r, action === 'readLabel' && args[0] ? 1400 : 200));
+  await new Promise(r => setTimeout(r, (action === 'readLabel' || action === 'askWine') && args[0] ? 1400 : 200));
   if (window.__offline) throw Object.assign(new Error('Pas de connexion au script (réseau ou adresse incorrecte).'), { net: true });
   return JSON.parse(JSON.stringify(API[action](...args)));
 }

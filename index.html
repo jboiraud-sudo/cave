@@ -179,6 +179,23 @@ label{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
 .icbtn{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--accent);display:flex;align-items:center;justify-content:center;padding:0}
 .icbtn:active{transform:scale(.94)}
 .icbtn:disabled{opacity:.4}
+/* Poser une question sur un vin */
+.ask-chips{display:flex;flex-wrap:wrap;gap:8px}
+.ask-chips .chip{font-size:13.5px}
+.ask-f{display:flex;gap:8px;margin-top:10px}
+.ask-f input{flex:1;min-width:0;border-radius:999px;padding:10px 16px}
+.ask-f .icbtn{flex:none;background:var(--accent);color:#fff;border:0}
+.bubble{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:10px;box-shadow:var(--shadow);animation:rise .25s cubic-bezier(.2,.8,.2,1)}
+.bubble .q{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.bubble .a{font-size:14.5px;line-height:1.55}
+.bubble .a p{margin:0 0 8px}.bubble .a p:last-child{margin-bottom:0}
+.bubble .a ul{margin:4px 0 8px;padding-left:20px}.bubble .a li{margin:3px 0}
+.bubble .src{margin-top:10px;display:flex;flex-direction:column;gap:4px;font-size:13px}
+.bubble .src a{color:var(--accent);overflow-wrap:anywhere;display:flex;align-items:center;gap:4px}
+.bubble .src a svg{width:14px;height:14px;flex:none}
+.bubble .meta{margin-top:8px;font-size:11.5px}
+.bubble .wait{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px}
+.bubble .wait .spin{width:16px;height:16px;border:2px solid var(--gold-soft);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
 .retry{display:flex;width:fit-content;align-items:center;gap:6px;margin-top:8px;border:1px solid var(--line);background:var(--card);color:var(--accent);font-weight:600;font-size:14px;border-radius:999px;padding:6px 14px}
 .retry .ic{width:16px;height:16px}
 .title-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
@@ -343,6 +360,7 @@ header .acts #pending .ic{width:18px;height:18px}
   <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8h3l1.6-2.4h6.8L17 8h3v11H4z"/><circle cx="12" cy="13.2" r="3.6"/></symbol>
   <symbol id="i-image" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="9.5" r="1.6"/><path d="m4 17 5-5 4 4 2.5-2.5L20 17"/></symbol>
   <symbol id="i-rotate" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M4 12 20 4l-6 16-2.5-6.5z"/><path d="M11.5 13.5 20 4"/></symbol>
   <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
   <symbol id="i-move" viewBox="0 0 24 24"><path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/></symbol>
   <!-- REGIONS:START -->
@@ -464,7 +482,7 @@ async function call(cfg, action, args) {
   return j.data;
 }
 const run = (action, ...args) => call(CFG, action, args);
-const APP_VERSION = '19 nov. 2026 · 11';
+const APP_VERSION = '19 nov. 2026 · 12';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 const keyOf = b => [b.zone, b.cote, b.couleur, b.domaine, b.appellation, b.cuvee, b.millesime].join('|');
@@ -501,7 +519,7 @@ async function load() {
   else $('#loading').hidden = false;
   try {
     if (QUEUE.length) await sync(true); // sinon la version du serveur effacerait les actions pas encore envoyées
-    if (!QUEUE.length) { setData(await run('getData')); if (cached) toast('À jour'); probeUndoDrink(); probeReadLabel(); }
+    if (!QUEUE.length) { setData(await run('getData')); if (cached) toast('À jour'); probeUndoDrink(); probeReadLabel(); probeAsk(); }
     else toast(`Hors connexion · ${plural(QUEUE.length, 'action')} en attente`);
   } catch (e) { e.net && cached ? toast('Hors connexion · dernière version enregistrée') : fail(e); }
   $('#loading').hidden = true;
@@ -765,7 +783,9 @@ function showWine(key, open) {
     <div class="locs" id="w-locs" ${open ? '' : 'hidden'}>${w.locs.map(l => `<button class="loc" data-z="${esc(l.zone)}" data-c="${esc(l.cote)}">${icon('pin')}<span>${esc(placeName(l))}</span><b>${plural(l.nb, 'bouteille')}</b>${icon('chev')}</button>`).join('')}</div>
     <button class="btn" id="w-drink">${icon('glass')}J'ouvre une bouteille</button>
     <div class="row3"><button class="btn ghost" id="w-plus">${icon('plus')}1 bouteille</button><button class="btn ghost" id="w-move">${icon('move')}Déplacer</button><button class="btn ghost" id="w-edit">${icon('edit')}Modifier</button></div>
+    ${CAN_ASK ? askHtml(w) : ''}
     ${tastingsHtml(w)}`);
+  if (CAN_ASK) bindAsk(w);
   const back = () => showWine(key, true);
   $('#w-count').onclick = e => { const b = e.currentTarget, l = $('#w-locs'); l.hidden = !l.hidden; b.setAttribute('aria-expanded', String(!l.hidden)); };
   // Toucher un emplacement ouvre ce casier dans l'onglet Zones
@@ -1058,6 +1078,66 @@ function bindWineForm(root, onSubmit) {
     if ('nb' in o) o.nb = Number(o.nb);
     if (await onSubmit(o) && f.closest('#v-add')) renderAdd();
   };
+}
+
+/* ---------- Poser une question sur un vin ---------- */
+// Le script sait-il répondre (action « askWine ») ? Sonde sans effet : aucune question envoyée.
+let CAN_ASK = store.get('cave-ask') === true;
+async function probeAsk() {
+  if (CAN_ASK) return;
+  try { await run('askWine', null); CAN_ASK = true; }
+  catch (e) { if (e.net) return; CAN_ASK = !/Action inconnue/i.test(e.message); }
+  store.set('cave-ask', CAN_ASK);
+}
+const ASK_PRESETS = {
+  accord: ['Accord mets-vin', 'Quels plats accorder avec ce vin ? Donne trois ou quatre idées précises, et ce qu\'il vaut mieux éviter.'],
+  garde: ['Quand le boire ?', 'Quelle est la fenêtre de dégustation de ce vin (à partir de quand, jusqu\'à quand) ? Est-il prêt à boire cette année ? Faut-il le carafer, et à quelle température le servir ?'],
+  achat: ['Où le trouver ?', 'Ce vin, ou à défaut un autre millésime de la même cuvée, se trouve-t-il facilement à l\'achat en ligne en France ? Indique quelques sites marchands et une fourchette de prix si tu en trouves.']
+};
+const ASKED = new Map(); // réponses déjà obtenues, par vin, pour les retrouver en rouvrant la fiche
+function askHtml(w) {
+  return `<div class="group">Poser une question</div>
+    <div class="ask-chips">${Object.entries(ASK_PRESETS).map(([k, [lib]]) => `<button type="button" class="chip" data-k="${k}">${lib}</button>`).join('')}</div>
+    <form class="ask-f" id="ask-f" autocomplete="off"><input id="ask-in" placeholder="Ta question sur ce vin…" aria-label="Ta question sur ce vin">
+      <button class="icbtn" type="submit" aria-label="Envoyer la question">${icon('send')}</button></form>
+    <div id="ask-out">${(ASKED.get(w.key) || []).map(x => x.html).join('')}</div>`;
+}
+// Mise en forme simple : **gras**, listes « - », paragraphes ; tout le reste est échappé
+function fmtAnswer(t) {
+  const lignes = esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').split(/\n+/);
+  let out = '', liste = false;
+  lignes.forEach(l => {
+    const m = l.match(/^\s*[-•*]\s+(.*)/);
+    if (m) { if (!liste) { out += '<ul>'; liste = true; } out += `<li>${m[1]}</li>`; }
+    else { if (liste) { out += '</ul>'; liste = false; } if (l.trim()) out += `<p>${l.trim()}</p>`; }
+  });
+  return out + (liste ? '</ul>' : '');
+}
+function bindAsk(w) {
+  const go = (question, kind, lib) => askQuestion(w, question, kind, lib);
+  $('#sheet-panel .ask-chips').onclick = e => { const c = e.target.closest('.chip'); if (!c) return; const [lib, q] = ASK_PRESETS[c.dataset.k]; go(q, c.dataset.k, lib); };
+  $('#ask-f').onsubmit = e => { e.preventDefault(); const q = $('#ask-in').value.trim(); if (!q) return; $('#ask-in').value = ''; $('#ask-in').blur(); go(q, 'libre', q); };
+}
+async function askQuestion(w, question, kind, lib) {
+  const out = $('#ask-out'); if (!out) return;
+  const b = document.createElement('div'); b.className = 'bubble';
+  b.innerHTML = `<div class="q">${esc(lib)}</div><div class="wait"><span class="spin"></span>Réflexion en cours…</div>`;
+  out.appendChild(b); b.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  // Ce que la fiche sait du vin, plus tes dégustations de ce domaine
+  const degustations = D.drunk.filter(x => norm(x.domaine) === norm(w.domaine))
+    .sort((a, c) => String(c.date).localeCompare(String(a.date)))
+    .map(x => ({ date: x.date, appellation: x.appellation, cuvee: x.cuvee, millesime: x.millesime, note: x.note, stade: x.stade, commentaire: x.commentaire }));
+  try {
+    const r = await run('askWine', { ...descOf(w), degustations }, question, kind);
+    const src = r.sources && r.sources.length ? `<div class="src">${r.sources.map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${icon('chev')}${esc(s.titre)}</a>`).join('')}</div>` : '';
+    const note = kind === 'achat' && !r.recherche ? ' · sans recherche sur le web : informations peut-être anciennes' : '';
+    b.innerHTML = `<div class="q">${esc(lib)}</div><div class="a">${fmtAnswer(r.texte)}</div>${src}<div class="meta">Réponse générée automatiquement, à prendre comme un conseil${note}.</div>`;
+    const l = ASKED.get(w.key) || []; l.push({ html: b.outerHTML }); ASKED.set(w.key, l);
+  } catch (e) {
+    b.innerHTML = `<div class="q">${esc(lib)}</div><div class="a">⚠️ ${esc(e.net ? 'Il faut du réseau pour poser une question.' : e.message.replace(/^askWine → /, ''))}</div>
+      <button type="button" class="retry">${icon('refresh')}Réessayer</button>`;
+    b.querySelector('.retry').onclick = () => { b.remove(); askQuestion(w, question, kind, lib); };
+  }
 }
 
 /* ---------- Menu « Ajouter une bouteille » (bouton + et « Ajouter une bouteille ici ») ---------- */
