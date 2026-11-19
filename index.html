@@ -176,13 +176,22 @@ label{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
 .locq span{flex:1;font-size:15px}
 .locq input{width:84px;text-align:center}
 /* Lecture d'étiquette par photo */
-.photo{margin-bottom:6px}
-.photo-row{display:flex;align-items:center;gap:10px;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 8px 8px 14px}
-.photo-row span{font-size:14px;color:var(--muted)}
-.photo-row .btns{display:flex;gap:8px}
 .icbtn{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--accent);display:flex;align-items:center;justify-content:center;padding:0}
 .icbtn:active{transform:scale(.94)}
 .icbtn:disabled{opacity:.4}
+.title-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+.title-row .view-title{margin:4px 0}
+.title-row .btns{display:flex;gap:8px;flex:none}
+.photo-st{margin:0 0 4px}
+/* Menu du bouton + */
+.mi{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-top:8px;color:var(--ink)}
+.mi .ring{width:44px;height:44px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;flex:none}
+.mi b{display:block;font-size:15px}
+.mi small{display:block;font-size:12.5px;color:var(--muted);margin-top:1px}
+.mi.main{background:linear-gradient(160deg,var(--head1),var(--head2));color:#fff;border:0;box-shadow:var(--shadow)}
+.mi.main .ring{background:rgba(255,255,255,.14);color:#fff;box-shadow:0 0 0 2px var(--head-gold)}
+.mi.main small{color:#fff;opacity:.85}
+.mi:active{transform:scale(.985)}
 /* Écran de recadrage */
 .crop{position:fixed;inset:0;z-index:40;background:#141011;color:#f6ebdc;display:flex;flex-direction:column;
   padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)}
@@ -390,17 +399,14 @@ header .acts #pending .ic{width:18px;height:18px}
   <section id="v-zones" hidden></section>
 
   <section id="v-add" hidden>
-    <div class="view-title">Ajouter des bouteilles</div>
-    <div class="photo" id="photo-box" hidden>
-      <div class="photo-row"><span>Lire une étiquette</span>
-        <span class="btns">
-          <button class="icbtn" type="button" id="photo-cam" aria-label="Prendre l'étiquette en photo"><svg class="ic"><use href="#i-camera"/></svg></button>
-          <button class="icbtn" type="button" id="photo-lib" aria-label="Choisir une photo dans la galerie"><svg class="ic"><use href="#i-image"/></svg></button>
-        </span></div>
-      <input type="file" id="in-cam" accept="image/*" capture="environment" hidden>
-      <input type="file" id="in-lib" accept="image/*" hidden>
-      <div class="photo-st" id="photo-st" hidden></div>
-    </div>
+    <div class="title-row"><div class="view-title">Ajouter des bouteilles</div>
+      <span class="btns" id="photo-box" hidden>
+        <button class="icbtn" type="button" id="photo-cam" aria-label="Lire une étiquette : prendre une photo"><svg class="ic"><use href="#i-camera"/></svg></button>
+        <button class="icbtn" type="button" id="photo-lib" aria-label="Lire une étiquette : choisir une photo dans la galerie"><svg class="ic"><use href="#i-image"/></svg></button>
+      </span></div>
+    <input type="file" id="in-cam" accept="image/*" capture="environment" hidden>
+    <input type="file" id="in-lib" accept="image/*" hidden>
+    <div class="photo-st" id="photo-st" hidden></div>
     <div id="add-form"></div>
   </section>
 
@@ -455,7 +461,7 @@ async function call(cfg, action, args) {
   return j.data;
 }
 const run = (action, ...args) => call(CFG, action, args);
-const APP_VERSION = '19 nov. 2026 · 7';
+const APP_VERSION = '19 nov. 2026 · 8';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 const keyOf = b => [b.zone, b.cote, b.couleur, b.domaine, b.appellation, b.cuvee, b.millesime].join('|');
@@ -695,7 +701,7 @@ function closeZone() { ZSEL = null; renderZones(); animateIn($('#v-zones')); win
 $('#v-zones').onclick = e => {
   const p = e.target.closest('.place'); if (p) return openZone(p.dataset.z, p.dataset.c);
   if (e.target.closest('#z-back')) return closeZone();
-  if (e.target.closest('#z-add')) { renderAdd({ zone: ZSEL.zone, cote: ZSEL.cote, nb: 1 }); showView('add'); return; }
+  if (e.target.closest('#z-add')) return openAddMenu({ zone: ZSEL.zone, cote: ZSEL.cote, nb: 1 });
   const c = e.target.closest('.card'); if (c) { const b = D.bottles.find(x => x.row === Number(c.dataset.row)); if (b) showWine(wineKey(b), true); }
 };
 
@@ -704,6 +710,7 @@ let sheetTimer;
 function openSheet(html) {
   const s = $('#sheet'), p = $('#sheet-panel');
   clearTimeout(sheetTimer);
+  p.onclick = null;
   p.innerHTML = '<div class="grip"></div>' + html;
   if (s.hidden || !s.classList.contains('open')) {
     s.hidden = false; void s.offsetWidth; s.classList.add('open');
@@ -1050,6 +1057,28 @@ function bindWineForm(root, onSubmit) {
   };
 }
 
+/* ---------- Menu « Ajouter une bouteille » (bouton + et « Ajouter une bouteille ici ») ---------- */
+// prefill : emplacement déjà choisi (depuis une zone), sinon null
+function openAddMenu(prefill) {
+  const onForm = !$('#v-add').hidden;
+  // Prépare le formulaire : on garde une saisie en cours, sauf si un emplacement est imposé
+  const ready = () => { if (prefill || !onForm) renderAdd(prefill || null); showView('add'); };
+  if (!CAN_READ_LABEL) return ready(); // pas de lecture d'étiquette : directement le formulaire
+  const ou = prefill ? `<div class="sub">en ${esc(placeName(prefill))}</div>` : '';
+  openSheet(`<h2>Ajouter une bouteille</h2>${ou}
+    <button class="mi main" type="button" data-a="cam"><span class="ring">${icon('camera')}</span><span><b>Photographier l'étiquette</b><small>Les champs se remplissent tout seuls</small></span></button>
+    <button class="mi" type="button" data-a="lib"><span class="ring">${icon('image')}</span><span><b>Choisir une photo</b><small>Dans la galerie du téléphone</small></span></button>
+    <button class="mi" type="button" data-a="hand"><span class="ring">${icon('edit')}</span><span><b>Saisir à la main</b><small>Le formulaire classique</small></span></button>`);
+  $('#sheet-panel').onclick = e => {
+    const b = e.target.closest('.mi'); if (!b) return;
+    $('#sheet-panel').onclick = null;
+    ready(); closeSheet();
+    // l'appareil photo ou la galerie s'ouvrent dans le même geste (exigé par le téléphone)
+    if (b.dataset.a === 'cam') $('#in-cam').click();
+    if (b.dataset.a === 'lib') $('#in-lib').click();
+  };
+}
+
 /* ---------- Lecture d'étiquette par photo ---------- */
 // Réduit la photo (1280 px max, JPEG) : envoi rapide et suffisant pour lire une étiquette
 function shrinkPhoto(file, max = 1280) {
@@ -1332,7 +1361,10 @@ function atRoot() {
   if (!$('#setup').hidden && !CFG) return true; // première connexion : le geste retour peut quitter l'app
   return $('#crop').hidden && !sheetOpen() && $('#setup').hidden && !ZSEL && currentView() === 'cave';
 }
-function syncBack() {
+// Évalué une seule fois après chaque action complète (une action enchaîne souvent plusieurs changements)
+let SYNC_T = 0;
+function syncBack() { clearTimeout(SYNC_T); SYNC_T = setTimeout(doSyncBack, 0); }
+function doSyncBack() {
   const root = atRoot();
   if (!root && !GUARD) { try { history.pushState({ cave: 'garde' }, ''); GUARD = true; } catch (e) {} }
   else if (root && GUARD) { GUARD = false; IGNORE_POP = true; history.back(); } // revenu à l'accueil par l'app : on retire la garde
@@ -1352,11 +1384,12 @@ window.addEventListener('popstate', () => {
   if (IGNORE_POP) { IGNORE_POP = false; return; }
   GUARD = false; // le geste vient de consommer la garde
   stepBack();
-  syncBack();   // encore hors de l'accueil : on remet une garde
+  syncBack();   // encore hors de l'accueil : une garde sera remise
 });
 document.querySelectorAll('nav button').forEach(btn => btn.onclick = () => {
   // Toucher « Zones » depuis une zone ouverte ramène au casier
   if (btn.dataset.v === 'zones' && ZSEL && !$('#v-zones').hidden) closeZone();
+  if (btn.dataset.v === 'add') return openAddMenu(null);
   showView(btn.dataset.v);
 });
 $('#q').oninput = e => { F.q = e.target.value; renderCave(); };
