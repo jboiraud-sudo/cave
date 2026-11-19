@@ -408,7 +408,7 @@ async function call(cfg, action, args) {
   return j.data;
 }
 const run = (action, ...args) => call(CFG, action, args);
-const APP_VERSION = '19 nov. 2026 · 4';
+const APP_VERSION = '19 nov. 2026 · 5';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 const keyOf = b => [b.zone, b.cote, b.couleur, b.domaine, b.appellation, b.cuvee, b.millesime].join('|');
@@ -1049,7 +1049,11 @@ function fillFromLabel(r, known) {
     const same = (lists[k] || []).find(x => norm(x) === norm(v)); if (same) v = same;
     f[k].value = v; f[k].classList.add('ai'); n++;
   });
-  if (r.domaine && !r.region) f.domaine.dispatchEvent(new Event('change')); // région déduite d'un domaine connu
+  // Région : si l'appellation (ou à défaut le domaine) existe déjà dans la cave, on prend la région de la feuille
+  const all = D.bottles.concat(D.drunk).filter(b => b.region);
+  const ref = (f.appellation.value && all.find(b => norm(b.appellation) === norm(f.appellation.value)))
+    || (f.domaine.value && all.find(b => norm(b.domaine) === norm(f.domaine.value)));
+  if (ref && ref.region !== f.region.value) { if (!f.region.value) n++; f.region.value = ref.region; f.region.classList.add('ai'); }
   return n;
 }
 $('#photo-btn').onclick = () => $('#photo-in').click();
