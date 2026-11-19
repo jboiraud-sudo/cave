@@ -461,7 +461,7 @@ async function call(cfg, action, args) {
   return j.data;
 }
 const run = (action, ...args) => call(CFG, action, args);
-const APP_VERSION = '19 nov. 2026 · 8';
+const APP_VERSION = '19 nov. 2026 · 9';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 const keyOf = b => [b.zone, b.cote, b.couleur, b.domaine, b.appellation, b.cuvee, b.millesime].join('|');
@@ -1359,7 +1359,7 @@ const sheetOpen = () => !$('#sheet').hidden && $('#sheet').classList.contains('o
 const currentView = () => ['cave', 'zones', 'add', 'bues', 'stats'].find(k => !$('#v-' + k).hidden) || 'cave';
 function atRoot() {
   if (!$('#setup').hidden && !CFG) return true; // première connexion : le geste retour peut quitter l'app
-  return $('#crop').hidden && !sheetOpen() && $('#setup').hidden && !ZSEL && currentView() === 'cave';
+  return $('#crop').hidden && !sheetOpen() && $('#setup').hidden && currentView() === 'cave';
 }
 // Évalué une seule fois après chaque action complète (une action enchaîne souvent plusieurs changements)
 let SYNC_T = 0;
@@ -1377,7 +1377,8 @@ function stepBack() {
     return b ? b.click() : closeSheet();
   }
   if (!$('#setup').hidden) return CFG ? hideSetup() : undefined;
-  if (ZSEL) return closeZone();
+  // une zone ouverte ne compte que si l'onglet Zones est affiché (elle reste mémorisée quand on change d'onglet)
+  if (ZSEL && currentView() === 'zones') return closeZone();
   if (currentView() !== 'cave') return showView('cave');
 }
 window.addEventListener('popstate', () => {
