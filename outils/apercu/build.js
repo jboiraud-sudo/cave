@@ -7,6 +7,8 @@ let src = fs.readFileSync(SRC, 'utf8');
 const pick = (re) => { const m = src.match(re); if (!m) throw new Error('motif introuvable : ' + re); return m[1]; };
 let style = pick(/<style>([\s\S]*?)<\/style>/);
 let body = pick(/<body>([\s\S]*?)<\/body>/);
+// L'aperçu embarque la bibliothèque de recadrage (l'app, elle, la charge depuis vendor/ quand on en a besoin)
+const cropJs = fs.readFileSync(path.join(__dirname, '../../vendor/cropper.min.js'), 'utf8');
 const fontLinks = (src.match(/<link rel="(?:preconnect|stylesheet)" href="https:\/\/fonts\.[^>]*>/g) || []).join('\n');
 
 // Thème : respecter le choix clair/sombre du viewer
@@ -108,6 +110,7 @@ $('#preview-net').onclick = e => {
 };
 $('#preview-reset').onclick = () => { DB = JSON.parse(JSON.stringify(SNAP)); QUEUE = []; saveQueue(); setData(API.getData()); closeSheet(); renderAdd(); toast('Aperçu réinitialisé'); };
 load();`);
+body = body.replace('\n<script>\n', '\n<script>' + cropJs + '</script>\n<script>\n');
 if (!body.includes('const API') || body.includes('serviceWorker') || !body.includes('preview-reset').valueOf()) throw new Error('remplacement raté');
 
 fs.writeFileSync(path.join(__dirname, 'ma-cave-apercu.html'),
