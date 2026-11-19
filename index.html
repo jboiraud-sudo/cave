@@ -179,6 +179,8 @@ label{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
 .icbtn{width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--bg);color:var(--accent);display:flex;align-items:center;justify-content:center;padding:0}
 .icbtn:active{transform:scale(.94)}
 .icbtn:disabled{opacity:.4}
+.retry{display:flex;width:fit-content;align-items:center;gap:6px;margin-top:8px;border:1px solid var(--line);background:var(--card);color:var(--accent);font-weight:600;font-size:14px;border-radius:999px;padding:6px 14px}
+.retry .ic{width:16px;height:16px}
 .title-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
 .title-row .view-title{margin:4px 0}
 .title-row .btns{display:flex;gap:8px;flex:none}
@@ -462,7 +464,7 @@ async function call(cfg, action, args) {
   return j.data;
 }
 const run = (action, ...args) => call(CFG, action, args);
-const APP_VERSION = '19 nov. 2026 · 10';
+const APP_VERSION = '19 nov. 2026 · 11';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 const keyOf = b => [b.zone, b.cote, b.couleur, b.domaine, b.appellation, b.cuvee, b.millesime].join('|');
@@ -1110,7 +1112,10 @@ async function readLabelFromPhoto(ph) {
     photoStatus(n ? `${thumb}<span><b>${plural(n, 'champ pré-rempli', 'champs pré-remplis')}</b> en doré : vérifie-les, choisis l'emplacement, puis ajoute.</span>`
       : `${thumb}<span>Aucune information lisible sur cette photo. Essaie plus près, sans reflet.</span>`, 'ok');
   } catch (e) {
-    photoStatus(`${thumb}<span>⚠️ ${esc(e.net ? 'Il faut du réseau pour lire une étiquette.' : e.message)}</span>`);
+    // Réessayer avec la même photo (déjà recadrée), sans la reprendre
+    photoStatus(`${thumb}<span>⚠️ ${esc(e.net ? 'Il faut du réseau pour lire une étiquette.' : e.message.replace(/^readLabel → /, ''))}
+      <button type="button" class="retry" id="photo-retry">${icon('refresh')}Réessayer</button></span>`);
+    $('#photo-retry').onclick = () => readLabelFromPhoto(ph);
   } finally { setPhotoBtns(false); }
 }
 function setPhotoBtns(off) { $('#photo-cam').disabled = off; $('#photo-lib').disabled = off; }

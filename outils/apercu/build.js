@@ -73,6 +73,9 @@ const API = {
   // Lecture d'étiquette simulée (l'aperçu n'appelle pas Gemini)
   readLabel(img) {
     if (!img || !img.data) throw new Error('Photo manquante.');
+    // une lecture sur deux échoue, pour pouvoir essayer « Réessayer » dans l'aperçu
+    API._n = (API._n || 0) + 1;
+    if (API._n % 2) throw new Error('Gemini est très sollicité en ce moment (simulation de l\u2019aperçu). Réessaie dans un instant.');
     return { domaine: 'Domaine Cuilleron', appellation: 'Condrieu', cuvee: 'Les Chaillets', millesime: '2022', couleur: 'Blanc', region: 'Vallée du Rhône Nord' };
   },
   undoDrink(t) {
