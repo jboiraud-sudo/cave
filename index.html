@@ -323,6 +323,7 @@ header .acts #pending .ic{width:18px;height:18px}
     <label for="cfg-key">Clé secrète</label><input id="cfg-key" type="text" autocomplete="off" autocapitalize="off" spellcheck="false">
     <button class="btn" id="cfg-ok">Se connecter</button>
     <button class="btn ghost" id="cfg-cancel" hidden>Annuler</button>
+    <p class="meta" style="margin-top:18px;text-align:center">Version de l'app : <b id="app-version"></b></p>
   </main>
 </div>
 
@@ -392,6 +393,7 @@ async function call(cfg, action, args) {
   return j.data;
 }
 const run = (action, ...args) => call(CFG, action, args);
+const APP_VERSION = '19 nov. 2026 · 3';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 const keyOf = b => [b.zone, b.cote, b.couleur, b.domaine, b.appellation, b.cuvee, b.millesime].join('|');
@@ -419,7 +421,7 @@ function toastUndo(msg, onUndo) {
   t._h = setTimeout(() => t.classList.remove('show', 'act'), 6500);
   $('#t-undo').onclick = () => { clearTimeout(t._h); t.classList.remove('show', 'act'); onUndo(); };
 }
-function fail(e) { toast('⚠️ ' + (e && e.message ? e.message : e)); }
+function fail(e) { toast('⚠️ ' + (e && e.message ? e.message : e), 8000); }
 
 async function load() {
   if (!CFG) return showSetup();
@@ -459,6 +461,7 @@ $('#cfg-ok').onclick = async () => {
 };
 $('#cfg-cancel').onclick = hideSetup;
 $('#settings').onclick = showSetup;
+$('#app-version').textContent = APP_VERSION;
 
 function setData(d) {
   D = d;

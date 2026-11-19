@@ -1,5 +1,5 @@
 // Service worker : l'app s'ouvre même hors connexion (les données viennent du cache de l'app).
-const CACHE = 'cave-v2';
+const CACHE = 'cave-v3';
 const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 const FONTS = ['fonts.googleapis.com', 'fonts.gstatic.com'];
 
@@ -22,9 +22,9 @@ self.addEventListener('fetch', e => {
     return;
   }
   if (url.origin !== location.origin) return;
-  // App : réseau d'abord (pour toujours avoir la dernière version), cache en secours
+  // App : réseau d'abord, sans le cache HTTP (sinon une version de plus de 10 min peut revenir), cache en secours
   e.respondWith(
-    fetch(req).then(res => {
+    fetch(new Request(req.url, { cache: 'no-store', credentials: 'same-origin' })).then(res => {
       const copy = res.clone();
       caches.open(CACHE).then(c => c.put(req, copy));
       return res;
