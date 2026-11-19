@@ -455,7 +455,7 @@ async function call(cfg, action, args) {
   return j.data;
 }
 const run = (action, ...args) => call(CFG, action, args);
-const APP_VERSION = '19 nov. 2026 · 6';
+const APP_VERSION = '19 nov. 2026 · 7';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 const keyOf = b => [b.zone, b.cote, b.couleur, b.domaine, b.appellation, b.cuvee, b.millesime].join('|');
@@ -505,10 +505,12 @@ function showSetup() {
   $('#cfg-url').value = CFG ? CFG.url : '';
   $('#cfg-key').value = CFG ? CFG.key : '';
   $('#cfg-cancel').hidden = !CFG;
+  syncBack();
 }
 function hideSetup() {
   $('#setup').hidden = true;
   document.querySelectorAll('body > main, nav').forEach(x => x.hidden = false);
+  syncBack();
 }
 $('#cfg-ok').onclick = async () => {
   const cfg = { url: $('#cfg-url').value.trim(), key: $('#cfg-key').value.trim() };
@@ -686,19 +688,16 @@ function renderZone() {
 
 function openZone(zone, cote) {
   ZSEL = { zone, cote };
-  try { history.pushState({ zone: 1 }, ''); } catch (e) {}
-  renderZones(); animateIn($('#v-zones')); window.scrollTo(0, 0);
+  renderZones(); animateIn($('#v-zones')); window.scrollTo(0, 0); syncBack();
 }
-function closeZone() { ZSEL = null; renderZones(); animateIn($('#v-zones')); window.scrollTo(0, 0); }
+function closeZone() { ZSEL = null; renderZones(); animateIn($('#v-zones')); window.scrollTo(0, 0); syncBack(); }
 
 $('#v-zones').onclick = e => {
   const p = e.target.closest('.place'); if (p) return openZone(p.dataset.z, p.dataset.c);
-  if (e.target.closest('#z-back')) { if (history.state && history.state.zone) history.back(); else closeZone(); return; }
+  if (e.target.closest('#z-back')) return closeZone();
   if (e.target.closest('#z-add')) { renderAdd({ zone: ZSEL.zone, cote: ZSEL.cote, nb: 1 }); showView('add'); return; }
   const c = e.target.closest('.card'); if (c) { const b = D.bottles.find(x => x.row === Number(c.dataset.row)); if (b) showWine(wineKey(b), true); }
 };
-// Bouton « retour » du téléphone : revient à la grille des zones au lieu de quitter l'app
-window.addEventListener('popstate', () => { if (ZSEL) closeZone(); });
 
 /* ---------- Volet du bas ---------- */
 let sheetTimer;
@@ -709,11 +708,13 @@ function openSheet(html) {
   if (s.hidden || !s.classList.contains('open')) {
     s.hidden = false; void s.offsetWidth; s.classList.add('open');
   } else { p.scrollTop = 0; animateIn(p); }
+  syncBack();
 }
 function closeSheet() {
   const s = $('#sheet'); if (s.hidden) return;
   s.classList.remove('open');
   sheetTimer = setTimeout(() => { s.hidden = true; }, 300);
+  syncBack();
 }
 
 function labelHtml(w) {
@@ -1100,7 +1101,7 @@ async function openCrop(file) {
   try { await loadCropper(); }
   catch (e) { return readLabelFromPhoto(await shrinkPhoto(file)); } // sans recadrage plutôt que rien
   const img = $('#crop-img');
-  $('#crop').hidden = false;
+  $('#crop').hidden = false; syncBack();
   img.onload = () => {
     if (CROPPER) CROPPER.destroy();
     CROPPER = new Cropper(img, { viewMode: 1, dragMode: 'crop', autoCropArea: 1, background: false, guides: true,
@@ -1113,6 +1114,7 @@ function closeCrop() {
   $('#crop').hidden = true;
   if (CROPPER) { CROPPER.destroy(); CROPPER = null; }
   $('#crop-img').removeAttribute('src');
+  syncBack();
 }
 // Après un quart de tour : l'image est réajustée à l'écran et le cadre reprend toute l'image
 function rotateCrop() {
@@ -1317,7 +1319,41 @@ function showView(v) {
   ['cave', 'zones', 'add', 'bues', 'stats'].forEach(k => $('#v-' + k).hidden = k !== v);
   animateIn($('#v-' + v));
   window.scrollTo(0, 0);
+  syncBack();
 }
+
+/* ---------- Geste « retour » du téléphone ----------
+   Tant que l'app n'est pas à l'accueil (onglet Liste, rien d'ouvert), une entrée « garde » est placée dans
+   l'historique : le geste retour la consomme, et l'app recule d'une étape au lieu de se fermer. */
+let GUARD = false, IGNORE_POP = false;
+const sheetOpen = () => !$('#sheet').hidden && $('#sheet').classList.contains('open');
+const currentView = () => ['cave', 'zones', 'add', 'bues', 'stats'].find(k => !$('#v-' + k).hidden) || 'cave';
+function atRoot() {
+  if (!$('#setup').hidden && !CFG) return true; // première connexion : le geste retour peut quitter l'app
+  return $('#crop').hidden && !sheetOpen() && $('#setup').hidden && !ZSEL && currentView() === 'cave';
+}
+function syncBack() {
+  const root = atRoot();
+  if (!root && !GUARD) { try { history.pushState({ cave: 'garde' }, ''); GUARD = true; } catch (e) {} }
+  else if (root && GUARD) { GUARD = false; IGNORE_POP = true; history.back(); } // revenu à l'accueil par l'app : on retire la garde
+}
+// Une étape en arrière, de la plus « haute » à la plus basse
+function stepBack() {
+  if (!$('#crop').hidden) return closeCrop();
+  if (sheetOpen()) {
+    const b = $('#sheet-panel').querySelector('#pk-back, #mv-back, #ed-back, #d-back');
+    return b ? b.click() : closeSheet();
+  }
+  if (!$('#setup').hidden) return CFG ? hideSetup() : undefined;
+  if (ZSEL) return closeZone();
+  if (currentView() !== 'cave') return showView('cave');
+}
+window.addEventListener('popstate', () => {
+  if (IGNORE_POP) { IGNORE_POP = false; return; }
+  GUARD = false; // le geste vient de consommer la garde
+  stepBack();
+  syncBack();   // encore hors de l'accueil : on remet une garde
+});
 document.querySelectorAll('nav button').forEach(btn => btn.onclick = () => {
   // Toucher « Zones » depuis une zone ouverte ramène au casier
   if (btn.dataset.v === 'zones' && ZSEL && !$('#v-zones').hidden) closeZone();
