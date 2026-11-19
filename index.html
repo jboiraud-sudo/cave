@@ -482,7 +482,7 @@ async function call(cfg, action, args) {
   return j.data;
 }
 const run = (action, ...args) => call(CFG, action, args);
-const APP_VERSION = '19 nov. 2026 · 12';
+const APP_VERSION = '19 nov. 2026 · 13';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 const keyOf = b => [b.zone, b.cote, b.couleur, b.domaine, b.appellation, b.cuvee, b.millesime].join('|');
@@ -1094,13 +1094,14 @@ const ASK_PRESETS = {
   garde: ['Quand le boire ?', 'Quelle est la fenêtre de dégustation de ce vin (à partir de quand, jusqu\'à quand) ? Est-il prêt à boire cette année ? Faut-il le carafer, et à quelle température le servir ?'],
   achat: ['Où le trouver ?', 'Ce vin, ou à défaut un autre millésime de la même cuvée, se trouve-t-il facilement à l\'achat en ligne en France ? Indique quelques sites marchands et une fourchette de prix si tu en trouves.']
 };
-const ASKED = new Map(); // réponses déjà obtenues, par vin, pour les retrouver en rouvrant la fiche
+const ASKED = new Map(); // dernière réponse obtenue, par vin, pour la retrouver en rouvrant la fiche
+let ASK_SEQ = 0;          // seule la dernière question posée a le droit de s'afficher
 function askHtml(w) {
   return `<div class="group">Poser une question</div>
     <div class="ask-chips">${Object.entries(ASK_PRESETS).map(([k, [lib]]) => `<button type="button" class="chip" data-k="${k}">${lib}</button>`).join('')}</div>
     <form class="ask-f" id="ask-f" autocomplete="off"><input id="ask-in" placeholder="Ta question sur ce vin…" aria-label="Ta question sur ce vin">
       <button class="icbtn" type="submit" aria-label="Envoyer la question">${icon('send')}</button></form>
-    <div id="ask-out">${(ASKED.get(w.key) || []).map(x => x.html).join('')}</div>`;
+    <div id="ask-out">${ASKED.get(w.key) || ''}</div>`;
 }
 // Mise en forme simple : **gras**, listes « - », paragraphes ; tout le reste est échappé
 function fmtAnswer(t) {
@@ -1122,7 +1123,7 @@ async function askQuestion(w, question, kind, lib) {
   const out = $('#ask-out'); if (!out) return;
   const b = document.createElement('div'); b.className = 'bubble';
   b.innerHTML = `<div class="q">${esc(lib)}</div><div class="wait"><span class="spin"></span>Réflexion en cours…</div>`;
-  out.appendChild(b); b.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  const seq = ++ASK_SEQ; out.replaceChildren(b); b.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   // Ce que la fiche sait du vin, plus tes dégustations de ce domaine
   const degustations = D.drunk.filter(x => norm(x.domaine) === norm(w.domaine))
     .sort((a, c) => String(c.date).localeCompare(String(a.date)))
@@ -1132,9 +1133,10 @@ async function askQuestion(w, question, kind, lib) {
     const src = r.sources && r.sources.length ? `<div class="src">${r.sources.map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${icon('chev')}${esc(s.titre)}</a>`).join('')}</div>` : '';
     const note = kind === 'achat' && !r.recherche ? ' · sans recherche sur le web : informations peut-être anciennes' : '';
     b.innerHTML = `<div class="q">${esc(lib)}</div><div class="a">${fmtAnswer(r.texte)}</div>${src}<div class="meta">Réponse générée automatiquement, à prendre comme un conseil${note}.</div>`;
-    const l = ASKED.get(w.key) || []; l.push({ html: b.outerHTML }); ASKED.set(w.key, l);
+    if (seq === ASK_SEQ) ASKED.set(w.key, b.outerHTML);
   } catch (e) {
-    b.innerHTML = `<div class="q">${esc(lib)}</div><div class="a">⚠️ ${esc(e.net ? 'Il faut du réseau pour poser une question.' : e.message.replace(/^askWine → /, ''))}</div>
+    if (seq === ASK_SEQ) ASKED.delete(w.key);
+    b.innerHTML = `<div class="q">${esc(lib)}</div><div class="a">${e.net ? 'Pas de réseau : réponse impossible pour le moment. Réessaye plus tard.' : 'Réponse impossible pour le moment. Réessaye plus tard.'}</div>
       <button type="button" class="retry">${icon('refresh')}Réessayer</button>`;
     b.querySelector('.retry').onclick = () => { b.remove(); askQuestion(w, question, kind, lib); };
   }

@@ -73,6 +73,7 @@ const API = {
   // Questions simulées (l'aperçu n'interroge pas l'IA)
   askWine(w, question, kind) {
     if (!w || !question) throw new Error('Question manquante.');
+    if (/erreur/i.test(question)) throw new Error("Le service d'IA est très sollicité en ce moment. Réessaie dans un instant.");
     const vin = w.domaine + (w.cuvee ? ' « ' + w.cuvee + ' »' : '') + (w.millesime ? ' ' + w.millesime : '');
     const T = {
       accord: 'Réponse simulée pour l’aperçu. Pour ' + vin + ', quelques pistes :\\n- **Viandes rôties** ou gibier à plume\\n- **Fromages affinés** à pâte pressée\\n- Un plat mijoté aux champignons\\nÉvite les plats très épicés ou sucrés, qui écraseraient le vin.',
