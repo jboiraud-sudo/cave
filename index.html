@@ -198,7 +198,8 @@ label{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
 .crop-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px}
 .crop-top b{font:600 18px var(--serif)}
 .crop-top button{background:none;border:0;color:#f6ebdc;font-size:15px;padding:8px 10px;border-radius:10px;display:flex;align-items:center;gap:6px}
-.crop-area{flex:1;min-height:0;position:relative;margin:6px 16px}
+/* marges larges : les poignées restent hors de la bande du geste retour d'Android, le long des bords */
+.crop-area{flex:1;min-height:0;position:relative;margin:8px 48px}
 .crop-area img{display:block;max-width:100%}
 .crop-hint{text-align:center;font-size:13px;color:#c9b8a8;padding:4px 16px 0}
 .crop-bot{padding:12px 16px 16px}
@@ -461,7 +462,7 @@ async function call(cfg, action, args) {
   return j.data;
 }
 const run = (action, ...args) => call(CFG, action, args);
-const APP_VERSION = '19 nov. 2026 · 9';
+const APP_VERSION = '19 nov. 2026 · 10';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 const keyOf = b => [b.zone, b.cote, b.couleur, b.domaine, b.appellation, b.cuvee, b.millesime].join('|');
@@ -1133,7 +1134,7 @@ async function openCrop(file) {
   $('#crop').hidden = false; syncBack();
   img.onload = () => {
     if (CROPPER) CROPPER.destroy();
-    CROPPER = new Cropper(img, { viewMode: 1, dragMode: 'crop', autoCropArea: 1, background: false, guides: true,
+    CROPPER = new Cropper(img, { viewMode: 1, dragMode: 'crop', autoCropArea: .85, background: false, guides: true,
       movable: false, zoomable: true, zoomOnTouch: false, zoomOnWheel: false, rotatable: true, scalable: false,
       checkOrientation: false, toggleDragModeOnDblclick: false, responsive: true });
   };
@@ -1156,8 +1157,8 @@ function rotateCrop() {
   CROPPER.zoomTo(z);
   const cv = CROPPER.getCanvasData();
   CROPPER.setCanvasData({ left: (ct.width - cv.width) / 2, top: (ct.height - cv.height) / 2 });
-  const c2 = CROPPER.getCanvasData();
-  CROPPER.setCropBoxData({ left: c2.left, top: c2.top, width: c2.width, height: c2.height });
+  const c2 = CROPPER.getCanvasData(), m = .075; // cadre à 85 %, centré
+  CROPPER.setCropBoxData({ left: c2.left + c2.width * m, top: c2.top + c2.height * m, width: c2.width * (1 - 2 * m), height: c2.height * (1 - 2 * m) });
 }
 $('#crop-cancel').onclick = closeCrop;
 $('#crop-rot').onclick = rotateCrop;
