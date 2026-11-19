@@ -68,6 +68,11 @@ const API = {
     if (v[8] <= 0) DB.inv.splice(i, 1); else DB.inv[i] = v;
     return API.getData();
   },
+  // Lecture d'étiquette simulée (l'aperçu n'appelle pas Gemini)
+  readLabel(img) {
+    if (!img || !img.data) throw new Error('Photo manquante.');
+    return { domaine: 'Domaine Cuilleron', appellation: 'Condrieu', cuvee: 'Les Chaillets', millesime: '2022', couleur: 'Blanc', region: 'Vallée du Rhône Nord' };
+  },
   undoDrink(t) {
     for (let i = DB.bues.length - 1; i >= 0; i--) {
       const r = DB.bues[i];
@@ -85,7 +90,7 @@ const API = {
 };
 window.__offline = false;
 async function call(cfg, action, args) {
-  await new Promise(r => setTimeout(r, 200));
+  await new Promise(r => setTimeout(r, action === 'readLabel' && args[0] ? 1400 : 200));
   if (window.__offline) throw Object.assign(new Error('Pas de connexion au script (réseau ou adresse incorrecte).'), { net: true });
   return JSON.parse(JSON.stringify(API[action](...args)));
 }

@@ -175,6 +175,15 @@ label{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
 .locq{display:flex;align-items:center;gap:10px;margin-top:8px}
 .locq span{flex:1;font-size:15px}
 .locq input{width:84px;text-align:center}
+/* Lecture d'étiquette par photo */
+.photo{margin-bottom:6px}
+.photo .btn{margin-top:0}
+.photo-st{display:flex;align-items:center;gap:12px;margin-top:10px;font-size:14px;color:var(--muted)}
+.photo-st img{width:52px;height:52px;object-fit:cover;border-radius:8px;border:1px solid var(--line);flex:none}
+.photo-st.ok{color:var(--ink)}
+.photo-st .spin{width:18px;height:18px;border:2px solid var(--gold-soft);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+input.ai{background:var(--gold-soft);transition:background .6s}
 .seg{display:flex;gap:6px}
 .seg button{flex:1;border:1px solid var(--line);background:var(--card);border-radius:10px;padding:10px 4px;font-size:14px;transition:background .15s,color .15s}
 .seg button.on{background:var(--accent);border-color:var(--accent);color:#fff}
@@ -286,6 +295,7 @@ header .acts #pending .ic{width:18px;height:18px}
   <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16z"/></symbol>
   <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
   <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M3 3l18 18M8.5 6.6A6 6 0 0 1 18 10.3 4 4 0 0 1 20.3 17M17 18H7a4 4 0 0 1-1.5-7.7"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8h3l1.6-2.4h6.8L17 8h3v11H4z"/><circle cx="12" cy="13.2" r="3.6"/></symbol>
   <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
   <symbol id="i-move" viewBox="0 0 24 24"><path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/></symbol>
   <!-- REGIONS:START -->
@@ -346,6 +356,11 @@ header .acts #pending .ic{width:18px;height:18px}
 
   <section id="v-add" hidden>
     <div class="view-title">Ajouter des bouteilles</div>
+    <div class="photo" id="photo-box" hidden>
+      <button class="btn ghost" type="button" id="photo-btn"><svg class="ic"><use href="#i-camera"/></svg>Photographier l'étiquette</button>
+      <input type="file" id="photo-in" accept="image/*" capture="environment" hidden>
+      <div class="photo-st" id="photo-st" hidden></div>
+    </div>
     <div id="add-form"></div>
   </section>
 
@@ -393,7 +408,7 @@ async function call(cfg, action, args) {
   return j.data;
 }
 const run = (action, ...args) => call(CFG, action, args);
-const APP_VERSION = '19 nov. 2026 · 3';
+const APP_VERSION = '19 nov. 2026 · 4';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 const keyOf = b => [b.zone, b.cote, b.couleur, b.domaine, b.appellation, b.cuvee, b.millesime].join('|');
@@ -430,7 +445,7 @@ async function load() {
   else $('#loading').hidden = false;
   try {
     if (QUEUE.length) await sync(true); // sinon la version du serveur effacerait les actions pas encore envoyées
-    if (!QUEUE.length) { setData(await run('getData')); if (cached) toast('À jour'); probeUndoDrink(); }
+    if (!QUEUE.length) { setData(await run('getData')); if (cached) toast('À jour'); probeUndoDrink(); probeReadLabel(); }
     else toast(`Hors connexion · ${plural(QUEUE.length, 'action')} en attente`);
   } catch (e) { e.net && cached ? toast('Hors connexion · dernière version enregistrée') : fail(e); }
   $('#loading').hidden = true;
@@ -858,6 +873,16 @@ function inverseOf(d, fn, args) {
 // Le script sait-il annuler une dégustation (action « undoDrink », ajoutée dans une version plus récente du script) ?
 // Sonde sans effet : une dégustation fictive qui ne correspond à aucune ligne.
 let CAN_UNDO_DRINK = store.get('cave-undo-drink') === true;
+// Le script sait-il lire une étiquette (action « readLabel ») ? Sonde sans effet : aucune photo envoyée.
+let CAN_READ_LABEL = store.get('cave-read-label') === true;
+async function probeReadLabel() {
+  if (CAN_READ_LABEL) return showPhotoBox();
+  try { await run('readLabel', null); CAN_READ_LABEL = true; }
+  catch (e) { if (e.net) return; CAN_READ_LABEL = !/Action inconnue/i.test(e.message); }
+  store.set('cave-read-label', CAN_READ_LABEL); showPhotoBox();
+}
+function showPhotoBox() { $('#photo-box').hidden = !CAN_READ_LABEL; }
+
 async function probeUndoDrink() {
   if (CAN_UNDO_DRINK) return;
   try { await run('undoDrink', { date: '0000-00-00', domaine: '\u0000sonde' }); CAN_UNDO_DRINK = true; }
@@ -977,7 +1002,62 @@ function bindWineForm(root, onSubmit) {
   };
 }
 
+/* ---------- Lecture d'étiquette par photo ---------- */
+// Réduit la photo (1280 px max, JPEG) : envoi rapide et suffisant pour lire une étiquette
+function shrinkPhoto(file, max = 1280) {
+  return new Promise((ok, ko) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const k = Math.min(1, max / Math.max(img.naturalWidth, img.naturalHeight));
+      const c = document.createElement('canvas'); c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+      const dataUrl = c.toDataURL('image/jpeg', .82); ok({ dataUrl, data: dataUrl.split(',')[1], mime: 'image/jpeg' });
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); ko(new Error('Photo illisible : réessaie.')); };
+    img.src = url;
+  });
+}
+function photoStatus(html, cls) { const st = $('#photo-st'); st.hidden = !html; st.className = 'photo-st' + (cls ? ' ' + cls : ''); st.innerHTML = html || ''; }
+
+async function readLabelFromFile(file) {
+  if (!file) return;
+  let ph;
+  try { ph = await shrinkPhoto(file); } catch (e) { return photoStatus('⚠️ ' + esc(e.message)); }
+  const thumb = `<img src="${ph.dataUrl}" alt="">`;
+  photoStatus(`${thumb}<span class="spin"></span><span>Lecture de l'étiquette…</span>`);
+  $('#photo-btn').disabled = true;
+  // Les noms déjà présents dans la cave, pour que Gemini reprenne la même orthographe
+  const all = D.bottles.concat(D.drunk);
+  const known = { domaines: uniq(all.map(b => b.domaine)), appellations: uniq(all.map(b => b.appellation)), regions: uniq(all.map(b => b.region)), couleurs: uniq(all.map(b => b.couleur)) };
+  try {
+    const r = await run('readLabel', { mime: ph.mime, data: ph.data }, known);
+    const n = fillFromLabel(r, known);
+    photoStatus(n ? `${thumb}<span><b>${plural(n, 'champ pré-rempli', 'champs pré-remplis')}</b> en doré : vérifie-les, choisis l'emplacement, puis ajoute.</span>`
+      : `${thumb}<span>Aucune information lisible sur cette photo. Essaie plus près, sans reflet.</span>`, 'ok');
+  } catch (e) {
+    photoStatus(`${thumb}<span>⚠️ ${esc(e.net ? 'Il faut du réseau pour lire une étiquette.' : e.message)}</span>`);
+  } finally { $('#photo-btn').disabled = false; $('#photo-in').value = ''; }
+}
+
+// Remplit le formulaire d'ajout ; reprend l'orthographe de la cave quand le nom correspond
+function fillFromLabel(r, known) {
+  const f = $('#add-form form.wf'); if (!f || !r) return 0;
+  const lists = { domaine: known.domaines, appellation: known.appellations, region: known.regions, couleur: known.couleurs };
+  let n = 0;
+  ['domaine', 'appellation', 'cuvee', 'millesime', 'couleur', 'region'].forEach(k => {
+    let v = txt_(r[k]); if (!v) return;
+    const same = (lists[k] || []).find(x => norm(x) === norm(v)); if (same) v = same;
+    f[k].value = v; f[k].classList.add('ai'); n++;
+  });
+  if (r.domaine && !r.region) f.domaine.dispatchEvent(new Event('change')); // région déduite d'un domaine connu
+  return n;
+}
+$('#photo-btn').onclick = () => $('#photo-in').click();
+$('#photo-in').onchange = e => readLabelFromFile(e.target.files[0]);
+$('#add-form').addEventListener('input', e => e.target.classList && e.target.classList.remove('ai'));
+
 function renderAdd(prefill) {
+  photoStatus('');
   $('#add-form').innerHTML = wineForm(prefill || null, false);
   bindWineForm($('#add-form'), o => save('addBottle', [o], `${plural(o.nb, 'bouteille ajoutée', 'bouteilles ajoutées')}`));
 }
@@ -1150,6 +1230,7 @@ $('#pending').onclick = () => sync();
 saveQueue();
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+showPhotoBox(); // affiche le bouton photo tout de suite si le script le permet déjà
 load();
 </script>
 </body>
