@@ -321,6 +321,11 @@ header .acts #pending{border-radius:999px;gap:5px;align-items:center;padding:6px
 header .acts #pending .ic{width:18px;height:18px}
 /* Dégustations passées dans la fiche */
 .tasts{display:flex;flex-direction:column;gap:8px}
+/* Dégustation modifiable : toute la carte se touche, un petit crayon le signale */
+.t-ed{cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .12s}
+.t-ed:active{transform:scale(.985)}
+.t-ed .date .pen{display:inline-flex;vertical-align:-2px;margin-left:6px;color:var(--muted)}
+.t-ed .date .pen svg{width:13px;height:13px}
 .tast{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
 .tast .note{width:44px;height:44px}
 .tast .note b{font-size:15px}
@@ -482,7 +487,7 @@ async function call(cfg, action, args) {
   return j.data;
 }
 const run = (action, ...args) => call(CFG, action, args);
-const APP_VERSION = '19 nov. 2026 · 13';
+const APP_VERSION = '22 nov. 2026 · 1';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 const keyOf = b => [b.zone, b.cote, b.couleur, b.domaine, b.appellation, b.cuvee, b.millesime].join('|');
@@ -519,7 +524,7 @@ async function load() {
   else $('#loading').hidden = false;
   try {
     if (QUEUE.length) await sync(true); // sinon la version du serveur effacerait les actions pas encore envoyées
-    if (!QUEUE.length) { setData(await run('getData')); if (cached) toast('À jour'); probeUndoDrink(); probeReadLabel(); probeAsk(); }
+    if (!QUEUE.length) { setData(await run('getData')); if (cached) toast('À jour'); probeUndoDrink(); probeReadLabel(); probeAsk(); probeEditTasting(); }
     else toast(`Hors connexion · ${plural(QUEUE.length, 'action')} en attente`);
   } catch (e) { e.net && cached ? toast('Hors connexion · dernière version enregistrée') : fail(e); }
   $('#loading').hidden = true;
@@ -763,9 +768,9 @@ function tastingsHtml(w) {
   const dom = D.drunk.filter(x => norm(x.domaine) === norm(w.domaine)).sort((a, b) => String(b.date).localeCompare(String(a.date)));
   if (!dom.length) return '';
   const isThis = x => norm(x.appellation) === norm(w.appellation) && norm(x.cuvee) === norm(w.cuvee);
-  const item = x => `<div class="tast">
+  const item = x => `<div class="tast${tEd(x)}>
       ${x.note !== '' ? `<div class="note"><b>${fmtNote(x.note)}</b><span>/20</span></div>` : ''}
-      <div class="grow"><div class="date">${frDate(x.date)} · ${esc(x.millesime || 'NM')}</div>
+      <div class="grow"><div class="date">${frDate(x.date)} · ${esc(x.millesime || 'NM')}${penHtml()}</div>
         ${isThis(x) ? '' : `<div class="what">${esc(x.appellation)}${x.cuvee ? ` <i>· ${esc(x.cuvee)}</i>` : ''}</div>`}
         ${x.stade || x.racheter === 'Oui' ? `<div class="tags">${x.stade ? `<span class="tag">${icon('clock')}${esc(x.stade)}</span>` : ''}${x.racheter === 'Oui' ? `<span class="tag">${icon('cart')}À racheter</span>` : ''}</div>` : ''}
         ${x.commentaire ? `<div class="quote">« ${esc(x.commentaire)} »</div>` : ''}</div></div>`;
@@ -787,6 +792,7 @@ function showWine(key, open) {
     ${tastingsHtml(w)}`);
   if (CAN_ASK) bindAsk(w);
   const back = () => showWine(key, true);
+  bindTastings($('#sheet-panel'), () => showWine(key));
   $('#w-count').onclick = e => { const b = e.currentTarget, l = $('#w-locs'); l.hidden = !l.hidden; b.setAttribute('aria-expanded', String(!l.hidden)); };
   // Toucher un emplacement ouvre ce casier dans l'onglet Zones
   $('#w-locs').onclick = e => { const l = e.target.closest('.loc'); if (!l) return; closeSheet(); showView('zones'); openZone(l.dataset.z, l.dataset.c); };
@@ -863,24 +869,75 @@ function editWine(w, back) {
   });
 }
 
+// Champs d'une dégustation, vides ou pré-remplis (t)
+function tastingFields(t) {
+  t = t || {};
+  const segBtns = (opts, val) => opts.map(s => `<button type="button"${s === val ? ' class="on"' : ''}>${s}</button>`).join('');
+  return `<div class="row"><div><label for="d-date">Date</label><input type="date" id="d-date" value="${esc(t.date || today())}"></div>
+      <div><label for="d-note">Note /20</label><input type="number" id="d-note" min="0" max="20" step="0.5" inputmode="decimal" placeholder="ex. 16" value="${t.note === '' || t.note == null ? '' : esc(t.note)}"></div></div>
+    <label>Stade d'évolution</label>
+    <div class="seg" id="d-stade">${segBtns(['Trop jeune', 'À point', 'Sur le déclin'], t.stade)}</div>
+    <label>À racheter ?</label>
+    <div class="seg" id="d-rach">${segBtns(['Oui', 'Non'], t.racheter)}</div>
+    <label for="d-com">Commentaire</label><textarea id="d-com" placeholder="Accord, impressions…">${esc(t.commentaire || '')}</textarea>`;
+}
+// Rend les champs actifs ; renvoie la lecture du formulaire (null si la note est invalide)
+function bindTastingFields() {
+  const seg = id => { const el = $(id); el.onclick = e => { if (e.target.tagName !== 'BUTTON') return; const on = e.target.classList.contains('on'); el.querySelectorAll('button').forEach(x => x.classList.remove('on')); if (!on) e.target.classList.add('on'); }; return () => (el.querySelector('.on') || {}).textContent || ''; };
+  const stade = seg('#d-stade'), rach = seg('#d-rach');
+  return () => {
+    const note = $('#d-note').value;
+    if (note !== '' && (note < 0 || note > 20)) { toast('La note doit être entre 0 et 20'); return null; }
+    return { date: $('#d-date').value || today(), note, stade: stade(), racheter: rach(), commentaire: $('#d-com').value.trim() };
+  };
+}
+
 function drinkForm(b, back) {
   openSheet(`${back ? `<button class="back" id="d-back">${icon('back')}Retour</button>` : ''}<h2>Dégustation</h2>
     <div class="sub">${esc(b.domaine)} · ${esc(b.appellation)} ${esc(b.cuvee)} ${esc(b.millesime)}<br>Sortie de ${esc(placeName(b))}</div>
-    <div class="row"><div><label for="d-date">Date</label><input type="date" id="d-date" value="${today()}"></div>
-      <div><label for="d-note">Note /20</label><input type="number" id="d-note" min="0" max="20" step="0.5" inputmode="decimal" placeholder="ex. 16"></div></div>
-    <label>Stade d'évolution</label>
-    <div class="seg" id="d-stade">${['Trop jeune', 'À point', 'Sur le déclin'].map(s => `<button type="button">${s}</button>`).join('')}</div>
-    <label>À racheter ?</label>
-    <div class="seg" id="d-rach"><button type="button">Oui</button><button type="button">Non</button></div>
-    <label for="d-com">Commentaire</label><textarea id="d-com" placeholder="Accord, impressions…"></textarea>
+    ${tastingFields()}
     <button class="btn" id="d-ok">${icon('glass')}Enregistrer et retirer de la cave</button>`);
-  const seg = id => { const el = $(id); el.onclick = e => { if (e.target.tagName !== 'BUTTON') return; const on = e.target.classList.contains('on'); el.querySelectorAll('button').forEach(x => x.classList.remove('on')); if (!on) e.target.classList.add('on'); }; return () => (el.querySelector('.on') || {}).textContent || ''; };
-  const stade = seg('#d-stade'), rach = seg('#d-rach');
+  const read = bindTastingFields();
+  if (back) $('#d-back').onclick = back;
+  $('#d-ok').onclick = () => { const t = read(); if (t) save('drinkBottle', [b.row, keyOf(b), t], 'Santé !'); };
+}
+
+/* ---------- Modifier une dégustation ---------- */
+// Le script sait-il modifier une dégustation (action « updateTasting ») ? Sonde sans effet : aucune dégustation envoyée.
+let CAN_EDIT_TASTING = store.get('cave-edit-tasting') === true;
+async function probeEditTasting() {
+  if (CAN_EDIT_TASTING) return;
+  try { await run('updateTasting', null); CAN_EDIT_TASTING = true; }
+  catch (e) { if (e.net) return; CAN_EDIT_TASTING = !/Action inconnue/i.test(e.message); }
+  store.set('cave-edit-tasting', CAN_EDIT_TASTING);
+  if (CAN_EDIT_TASTING) renderBues();
+}
+// Une dégustation touchable porte son numéro dans D.drunk
+const tEd = x => CAN_EDIT_TASTING ? ` t-ed" role="button" tabindex="0" data-t="${D.drunk.indexOf(x)}" aria-label="Modifier cette dégustation"` : '"';
+const penHtml = () => CAN_EDIT_TASTING ? `<span class="pen" aria-hidden="true">${icon('edit')}</span>` : '';
+function bindTastings(root, back) {
+  if (!CAN_EDIT_TASTING || !root) return;
+  const go = e => { const c = e.target.closest('.t-ed'); if (!c || !root.contains(c)) return; const x = D.drunk[+c.dataset.t]; if (x) editTasting(x, back); };
+  // propriétés (et non addEventListener) : un nouvel affichage remplace l'ancien branchement au lieu de s'y ajouter
+  (root.id === 'bues-list' ? [root] : [...root.querySelectorAll('.tasts')]).forEach(el => {
+    el.onclick = go;
+    el.onkeydown = e => { if (e.key === 'Enter' && e.target.classList.contains('t-ed')) go(e); };
+  });
+}
+// Ce qui permet au script de retrouver la ligne : la date et le vin, plus la note et le commentaire pour départager
+const tastingMatch = x => ({ date: x.date, domaine: x.domaine, appellation: x.appellation, cuvee: x.cuvee, millesime: x.millesime, note: x.note, commentaire: x.commentaire });
+function editTasting(x, back) {
+  openSheet(`${back ? `<button class="back" id="d-back">${icon('back')}Retour</button>` : ''}<h2>Modifier la dégustation</h2>
+    <div class="sub">${esc(x.domaine)} · ${esc(x.appellation)} ${esc(x.cuvee)} ${esc(x.millesime || 'NM')}</div>
+    ${tastingFields(x)}
+    <button class="btn" id="d-ok">Enregistrer</button>`);
+  const read = bindTastingFields();
   if (back) $('#d-back').onclick = back;
   $('#d-ok').onclick = () => {
-    const note = $('#d-note').value;
-    if (note !== '' && (note < 0 || note > 20)) return toast('La note doit être entre 0 et 20');
-    save('drinkBottle', [b.row, keyOf(b), { date: $('#d-date').value || today(), note, stade: stade(), racheter: rach(), commentaire: $('#d-com').value.trim() }], 'Santé !');
+    const t = read(); if (!t) return;
+    const same = t.date === x.date && String(t.note) === String(x.note) && t.stade === x.stade && t.racheter === x.racheter && t.commentaire === x.commentaire;
+    if (same) return back ? back() : closeSheet();
+    save('updateTasting', [tastingMatch(x), t], 'Dégustation modifiée');
   };
 }
 
@@ -904,6 +961,18 @@ function rowIndex(d, row, key) {
   return i;
 }
 const sameTasting = (x, t) => x.date === t.date && x.domaine === t.domaine && x.appellation === t.appellation && x.cuvee === t.cuvee && txt_(x.millesime) === txt_(t.millesime);
+const noteOf = n => n === '' || n == null ? '' : Math.max(0, Math.min(20, Number(String(n).replace(',', '.'))));
+// La dégustation visée : même date et même vin ; s'il y en a plusieurs, celle qui a aussi la même note et le même commentaire
+function tastingIndex(d, m) {
+  let found = -1;
+  for (let i = d.drunk.length - 1; i >= 0; i--) {
+    const x = d.drunk[i]; if (!sameTasting(x, m)) continue;
+    if (found < 0) found = i;
+    if (String(x.note) === String(m.note) && txt_(x.commentaire) === txt_(m.commentaire)) return i;
+  }
+  if (found < 0) throw new Error('Dégustation introuvable : elle a peut-être été modifiée ailleurs. Actualise et réessaie.');
+  return found;
+}
 // Même logique que le script, appliquée à la copie locale des données
 const LOCAL = {
   addBottle(d, o) {
@@ -922,6 +991,11 @@ const LOCAL = {
     d.drunk.push({ date: t.date || today(), couleur: b.couleur, region: b.region, domaine: b.domaine, appellation: b.appellation, cuvee: b.cuvee,
       millesime: b.millesime, note, stade: txt_(t.stade), racheter: txt_(t.racheter), commentaire: txt_(t.commentaire) });
     if (b.nb > 1) b.nb--; else d.bottles.splice(i, 1);
+    return d;
+  },
+  updateTasting(d, m, t) {
+    d = clone(d); const i = tastingIndex(d, m);
+    Object.assign(d.drunk[i], { date: t.date || d.drunk[i].date, note: noteOf(t.note), stade: txt_(t.stade), racheter: txt_(t.racheter), commentaire: txt_(t.commentaire) });
     return d;
   },
   undoDrink(d, t) {
@@ -944,6 +1018,11 @@ function inverseOf(d, fn, args) {
     const [row, key, t] = args, b = d.bottles[rowIndex(d, row, key)];
     // d'abord remettre la bouteille, ensuite effacer la dégustation : en cas d'échec, aucune bouteille n'est perdue
     return [['addBottle', [{ ...b, nb: 1 }]], ['undoDrink', [{ date: t.date || today(), domaine: b.domaine, appellation: b.appellation, cuvee: b.cuvee, millesime: b.millesime }]]];
+  }
+  if (fn === 'updateTasting') {
+    const [m, t] = args, prev = d.drunk[tastingIndex(d, m)];
+    const now = { ...prev, date: t.date || prev.date, note: noteOf(t.note), commentaire: txt_(t.commentaire) };
+    return [['updateTasting', [tastingMatch(now), { date: prev.date, note: prev.note, stade: prev.stade, racheter: prev.racheter, commentaire: prev.commentaire }]]];
   }
   return [];
 }
@@ -989,12 +1068,13 @@ async function sync(silent) {
 
 // Ce que fait chaque appel, en clair (pour expliquer un échec en cours de route)
 function stepLabel(fn, args) {
-  const o = fn === 'addBottle' ? args[0] : fn === 'updateBottle' ? args[2] : fn === 'undoDrink' ? args[0] : D.bottles.find(b => keyOf(b) === args[1]) || {};
+  const o = fn === 'addBottle' ? args[0] : fn === 'updateBottle' ? args[2] : fn === 'undoDrink' || fn === 'updateTasting' ? args[0] : D.bottles.find(b => keyOf(b) === args[1]) || {};
   const vin = `${o.domaine || 'le vin'}${o.millesime ? ' ' + o.millesime : ''}`;
   if (fn === 'addBottle') return `remettre ${vin} en ${placeName(o)}`;
   if (fn === 'updateBottle') return `mettre à jour ${vin}${o.zone ? ' en ' + placeName(o) : ''}`;
   if (fn === 'drinkBottle') return `retirer ${vin} de la cave`;
   if (fn === 'undoDrink') return `effacer la dégustation de ${vin} dans « Bouteilles bues »`;
+  if (fn === 'updateTasting') return `modifier la dégustation de ${vin}`;
   return fn;
 }
 
@@ -1291,15 +1371,16 @@ function renderBues() {
   const notes = l.filter(b => b.note !== '');
   const avg = notes.length ? fmtNote((notes.reduce((s, b) => s + b.note, 0) / notes.length).toFixed(1)) : '–';
   $('#bues-summary').textContent = l.length ? `${plural(l.length, 'bouteille bue', 'bouteilles bues')} · note moyenne ${avg}/20` : '';
-  $('#bues-list').innerHTML = l.length ? l.map(b => `<div class="card" style="align-items:flex-start">
+  $('#bues-list').innerHTML = l.length ? l.map(b => `<div class="card${tEd(b)} style="align-items:flex-start">
       ${bottleIcon(kind(b))}
-      <div class="grow"><div class="date">${frDate(b.date)}</div>
+      <div class="grow"><div class="date">${frDate(b.date)}${penHtml()}</div>
         <div class="dom">${esc(b.domaine)}</div>
         <div class="app">${esc(b.appellation)}${b.cuvee ? ` <i>· ${esc(b.cuvee)}</i>` : ''} · ${esc(b.millesime || 'NM')}</div>
         ${b.stade || b.racheter === 'Oui' ? `<div class="tags">${b.stade ? `<span class="tag">${icon('clock')}${esc(b.stade)}</span>` : ''}${b.racheter === 'Oui' ? `<span class="tag">${icon('cart')}À racheter</span>` : ''}</div>` : ''}
         ${b.commentaire ? `<div class="quote">« ${esc(b.commentaire)} »</div>` : ''}</div>
       ${b.note !== '' ? `<div class="note"><b>${fmtNote(b.note)}</b><span>/20</span></div>` : ''}</div>`).join('')
     : `<div class="empty">${icon('glass')}<b>Pas encore de dégustation</b>Ouvre la fiche d'un vin et touche « J'ouvre une bouteille ».</div>`;
+  bindTastings($('#bues-list'));
 }
 
 /* ---------- Stats ---------- */

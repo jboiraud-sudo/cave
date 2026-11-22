@@ -91,6 +91,21 @@ const API = {
     if (API._n % 2) throw new Error('Gemini est très sollicité en ce moment (simulation de l\u2019aperçu). Réessaie dans un instant.');
     return { domaine: 'Domaine Cuilleron', appellation: 'Condrieu', cuvee: 'Les Chaillets', millesime: '2022', couleur: 'Blanc', region: 'Vallée du Rhône Nord' };
   },
+  updateTasting(m, t) {
+    if (!m || !t) throw new Error('Dégustation manquante.');
+    let f = -1;
+    for (let i = DB.bues.length - 1; i >= 0; i--) {
+      const r = DB.bues[i];
+      if (r[0] !== m.date || r[3] !== m.domaine || r[4] !== m.appellation || r[5] !== m.cuvee || S_(r[6]) !== S_(m.millesime)) continue;
+      if (f < 0) f = i;
+      if (S_(r[7]) === S_(m.note) && S_(r[10]) === S_(m.commentaire)) { f = i; break; }
+    }
+    if (f < 0) throw new Error('Dégustation introuvable : elle a peut-être été modifiée ailleurs. Actualise et réessaie.');
+    const r = DB.bues[f];
+    r[0] = t.date || r[0]; r[7] = t.note === '' || t.note == null ? '' : Math.max(0, Math.min(20, Number(String(t.note).replace(',', '.'))));
+    r[8] = S_(t.stade); r[9] = S_(t.racheter); r[10] = S_(t.commentaire);
+    return API.getData();
+  },
   undoDrink(t) {
     for (let i = DB.bues.length - 1; i >= 0; i--) {
       const r = DB.bues[i];
