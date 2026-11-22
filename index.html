@@ -438,6 +438,7 @@ header .acts #pending .ic{width:18px;height:18px}
 
   <section id="v-bues" hidden>
     <div class="view-title">Bouteilles bues</div>
+    <div class="chips" id="bues-sort" role="group" aria-label="Classer les dégustations"></div>
     <div class="summary" id="bues-summary"></div>
     <div id="bues-list"></div>
   </section>
@@ -487,7 +488,7 @@ async function call(cfg, action, args) {
   return j.data;
 }
 const run = (action, ...args) => call(CFG, action, args);
-const APP_VERSION = '22 nov. 2026 · 1';
+const APP_VERSION = '22 nov. 2026 · 2';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 const keyOf = b => [b.zone, b.cote, b.couleur, b.domaine, b.appellation, b.cuvee, b.millesime].join('|');
@@ -1366,12 +1367,29 @@ function renderAdd(prefill) {
 }
 
 /* ---------- Bues ---------- */
+// Classements de l'onglet Bues ; la date (plus récentes d'abord) départage toujours
+const byDate = (a, b) => String(b.date).localeCompare(String(a.date));
+const STADES = ['À point', 'Trop jeune', 'Sur le déclin'];
+const stadeRank = x => { const i = STADES.indexOf(x.stade); return i < 0 ? STADES.length : i; };
+const BUES_SORTS = {
+  date: { lib: 'Date', cmp: byDate },
+  noteDesc: { lib: 'Note ↓', aria: 'Note, de la meilleure à la moins bonne', cmp: (a, b) => (a.note === '') - (b.note === '') || (b.note || 0) - (a.note || 0) || byDate(a, b) },
+  noteAsc: { lib: 'Note ↑', aria: 'Note, de la moins bonne à la meilleure', cmp: (a, b) => (a.note === '') - (b.note === '') || (a.note || 0) - (b.note || 0) || byDate(a, b) },
+  stade: { lib: 'Maturité', cmp: (a, b) => stadeRank(a) - stadeRank(b) || byDate(a, b), grp: x => x.stade && STADES.includes(x.stade) ? x.stade : 'Maturité non renseignée' }
+};
+let BUES_SORT = BUES_SORTS[store.get('cave-bues-sort')] ? store.get('cave-bues-sort') : 'date';
 function renderBues() {
-  const l = D.drunk.slice().sort((a, b) => String(b.date).localeCompare(String(a.date)));
+  const S = BUES_SORTS[BUES_SORT];
+  const l = D.drunk.slice().sort(S.cmp);
+  const bar = $('#bues-sort'); bar.hidden = !l.length;
+  bar.innerHTML = Object.entries(BUES_SORTS).map(([k, o]) => `<button type="button" class="chip${k === BUES_SORT ? ' on' : ''}" data-s="${k}" aria-pressed="${k === BUES_SORT}"${o.aria ? ` aria-label="${o.aria}"` : ''}>${o.lib}</button>`).join('');
+  bar.onclick = e => { const c = e.target.closest('.chip'); if (!c || c.dataset.s === BUES_SORT) return; BUES_SORT = c.dataset.s; store.set('cave-bues-sort', BUES_SORT); renderBues(); };
+  let grp = null;
+  const head = b => { if (!S.grp) return ''; const g = S.grp(b); if (g === grp) return ''; grp = g; return `<div class="group">${esc(g)}</div>`; };
   const notes = l.filter(b => b.note !== '');
   const avg = notes.length ? fmtNote((notes.reduce((s, b) => s + b.note, 0) / notes.length).toFixed(1)) : '–';
   $('#bues-summary').textContent = l.length ? `${plural(l.length, 'bouteille bue', 'bouteilles bues')} · note moyenne ${avg}/20` : '';
-  $('#bues-list').innerHTML = l.length ? l.map(b => `<div class="card${tEd(b)} style="align-items:flex-start">
+  $('#bues-list').innerHTML = l.length ? l.map(b => `${head(b)}<div class="card${tEd(b)} style="align-items:flex-start">
       ${bottleIcon(kind(b))}
       <div class="grow"><div class="date">${frDate(b.date)}${penHtml()}</div>
         <div class="dom">${esc(b.domaine)}</div>

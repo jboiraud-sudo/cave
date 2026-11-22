@@ -4,6 +4,15 @@ const path = require('path');
 const SRC = path.join(__dirname, '../../index.html');
 const snap = JSON.parse(fs.readFileSync(path.join(__dirname, 'snapshot.json'), 'utf8'));
 let src = fs.readFileSync(SRC, 'utf8');
+// Quelques dégustations d'exemple, seulement dans l'aperçu, pour voir le classement de l'onglet Bues
+const EX = ' (exemple de l\u2019aperçu)';
+const EXEMPLES = [
+  ['2026-10-18', 'Rouge', 'Vallée du Rhône Nord', 'Domaine Cuilleron', 'Côte-Rôtie', 'Madinière', '2017', 17, 'À point', 'Oui', 'Superbe, tout en finesse' + EX],
+  ['2026-09-27', 'Blanc', 'Bourgogne', 'Domaine André Bonhomme', 'Viré-Clessé', 'Les Prêtres de Quintaine', '2022', 13.5, 'Trop jeune', 'Non', 'Encore fermé, à attendre' + EX],
+  ['2026-08-15', 'Rouge', 'Bordeaux', 'Château Sociando-Mallet', 'Haut-Médoc', '', '2014', 15, 'À point', 'Oui', 'Belle maturité' + EX],
+  ['2026-07-02', 'Rouge', 'Vallée du Rhône Sud', 'Domaine des Tours', 'Vin de Pays de Vaucluse', 'Merlot-Syrah', '2012', 11, 'Sur le déclin', 'Non', 'Fatigué' + EX],
+  ['2026-06-10', 'Blanc', 'Loire', 'La Taille aux Loups', 'Vin de France', 'Bretonnière', '2024', '', '', '', 'Bu à l\u2019apéritif' + EX]
+];
 const pick = (re) => { const m = src.match(re); if (!m) throw new Error('motif introuvable : ' + re); return m[1]; };
 let style = pick(/<style>([\s\S]*?)<\/style>/);
 let body = pick(/<body>([\s\S]*?)<\/body>/);
@@ -34,7 +43,7 @@ body = body.replace('</header>', `</header>
 
 body = body.replace("let CFG = store.get('cave-cfg');", "let CFG = { url: 'apercu', key: 'apercu' };");
 body = body.replace(/async function call\(cfg, action, args\) \{[\s\S]*?\n\}\nconst run =/, `
-const SNAP = ${JSON.stringify({ inv: snap.inv, bues: snap.bues })};
+const SNAP = ${JSON.stringify({ inv: snap.inv, bues: snap.bues.concat(EXEMPLES) })};
 let DB = JSON.parse(JSON.stringify(SNAP));
 const S_ = x => x == null ? '' : String(x).trim();
 const K_ = r => [r[0], r[1], r[2], r[4], r[5], r[6], r[7]].map(S_).join('|');
