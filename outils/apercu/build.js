@@ -10,7 +10,8 @@ const EXEMPLES = [
   ['2026-10-18', 'Rouge', 'Vallée du Rhône Nord', 'Domaine Cuilleron', 'Côte-Rôtie', 'Madinière', '2017', 17, 'À point', 'Oui', 'Superbe, tout en finesse' + EX],
   ['2026-09-27', 'Blanc', 'Bourgogne', 'Domaine André Bonhomme', 'Viré-Clessé', 'Les Prêtres de Quintaine', '2022', 13.5, 'Trop jeune', 'Non', 'Encore fermé, à attendre' + EX],
   ['2026-08-15', 'Rouge', 'Bordeaux', 'Château Sociando-Mallet', 'Haut-Médoc', '', '2014', 15, 'À point', 'Oui', 'Belle maturité' + EX],
-  ['2026-07-02', 'Rouge', 'Vallée du Rhône Sud', 'Domaine des Tours', 'Vin de Pays de Vaucluse', 'Merlot-Syrah', '2012', 11, 'Sur le déclin', 'Non', 'Fatigué' + EX],
+  ['2026-07-02', 'Rouge', 'Vallée du Rhône Sud', 'Domaine des Tours', 'Vin de Pays de Vaucluse', 'Merlot-Syrah', '2012', 17.5, 'À point', 'Oui', 'Toujours impressionnant' + EX],
+  ['2026-05-21', 'Rouge', 'Péloponnèse (Grèce)', 'Cavino', 'Nemea', 'Réserve', '2019', 12, 'Sur le déclin', 'Non', 'Un peu fatigué' + EX],
   ['2026-06-10', 'Blanc', 'Loire', 'La Taille aux Loups', 'Vin de France', 'Bretonnière', '2024', '', '', '', 'Bu à l\u2019apéritif' + EX]
 ];
 const pick = (re) => { const m = src.match(re); if (!m) throw new Error('motif introuvable : ' + re); return m[1]; };
