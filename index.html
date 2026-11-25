@@ -196,6 +196,34 @@ label{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;
 .bubble .meta{margin-top:8px;font-size:11.5px}
 .bubble .wait{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:14px}
 .bubble .wait .spin{width:16px;height:16px;border:2px solid var(--gold-soft);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+/* Bulle « Poser une question » : bouton (en-tête ou flottant) et panneau plein écran */
+.chat-fab{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:calc(76px + env(safe-area-inset-bottom));z-index:6;width:46px;height:46px;border-radius:50%;border:1px solid var(--head-gold);
+  background:var(--card);color:var(--accent);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(70,20,20,.22);transition:transform .15s}
+.chat-fab:active{transform:scale(.92)}
+body.with-fab main{padding-bottom:170px}
+.chat{position:fixed;inset:0;z-index:9;background:var(--bg);display:flex;flex-direction:column;max-width:720px;margin:0 auto;animation:chat-in .28s cubic-bezier(.2,.8,.2,1)}
+@keyframes chat-in{from{opacity:0;transform:translateY(24px)}}
+.chat-top{display:flex;align-items:center;gap:6px;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top));background:linear-gradient(160deg,var(--head1),var(--head2));color:var(--head-ink);border-bottom:1px solid var(--head-gold)}
+.chat-x{background:none;border:0;color:inherit;padding:8px;border-radius:50%;display:flex}
+.chat-t{flex:1;min-width:0}.chat-t b{display:block;font:600 21px/1.1 var(--serif)}
+.chat-t small{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--head-gold)}
+.chat-new{background:rgba(255,255,255,.14);color:inherit;border:0;border-radius:999px;padding:7px 13px;font:inherit;font-size:13px;font-weight:600}
+.chat-log{flex:1;overflow-y:auto;padding:14px 16px 8px;overscroll-behavior:contain}
+.chat-hello{text-align:center;color:var(--muted);font-size:14.5px;line-height:1.5;margin:18px 8px 16px}
+.chat-hello b{display:block;font:600 22px var(--serif);color:var(--ink);margin-bottom:6px}
+.chat-hello .ic{width:34px;height:34px;color:var(--gold);margin-bottom:6px}
+.chat-sugg{display:flex;flex-direction:column;gap:8px}
+.chat-sugg button{display:flex;align-items:center;gap:10px;text-align:left;border:1px solid var(--line);background:var(--card);border-radius:14px;padding:12px 14px;font:inherit;font-size:15px;color:var(--ink);box-shadow:var(--shadow)}
+.chat-sugg button small{display:block;color:var(--muted);font-size:12.5px;margin-top:2px}
+.chat-sugg button .ic{flex:none;color:var(--accent)}
+.msg-me{margin:14px 0 4px auto;max-width:85%;width:fit-content;background:var(--accent);color:#fff;border-radius:16px 16px 4px 16px;padding:9px 13px;font-size:15px;line-height:1.45;white-space:pre-wrap;animation:rise .2s ease-out}
+.chat-log .bubble{border-radius:16px 16px 16px 4px;margin-top:8px}
+.chat-log .bubble .recos{margin-top:10px}
+.chat-log .bubble .recos .card{margin-bottom:6px;box-shadow:none}
+.chat-log .bubble .recos .meta{white-space:normal}
+.chat-f{display:flex;align-items:flex-end;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:var(--card)}
+.chat-f textarea{flex:1;min-width:0;resize:none;border-radius:22px;padding:11px 16px;max-height:120px;line-height:1.35;min-height:0}
+.chat-f .icbtn{flex:none;background:var(--accent);color:#fff;border:0}
 .retry{display:flex;width:fit-content;align-items:center;gap:6px;margin-top:8px;border:1px solid var(--line);background:var(--card);color:var(--accent);font-weight:600;font-size:14px;border-radius:999px;padding:6px 14px}
 .retry .ic{width:16px;height:16px}
 .title-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
@@ -366,6 +394,8 @@ header .acts #pending .ic{width:18px;height:18px}
   <symbol id="i-image" viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="9.5" r="1.6"/><path d="m4 17 5-5 4 4 2.5-2.5L20 17"/></symbol>
   <symbol id="i-rotate" viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></symbol>
   <symbol id="i-send" viewBox="0 0 24 24"><path d="M4 12 20 4l-6 16-2.5-6.5z"/><path d="M11.5 13.5 20 4"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M5 4.5h14a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H10l-4.5 4v-4H5A1.5 1.5 0 0 1 3.5 15V6A1.5 1.5 0 0 1 5 4.5z"/><path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01" stroke-width="2.4"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
   <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
   <symbol id="i-move" viewBox="0 0 24 24"><path d="M3 12h18M7 8l-4 4 4 4M17 8l4 4-4 4"/></symbol>
   <!-- REGIONS:START -->
@@ -390,6 +420,7 @@ header .acts #pending .ic{width:18px;height:18px}
   <div><h1>Ma cave</h1><div class="sub" id="head-sub">&nbsp;</div></div>
   <div class="acts">
     <button id="pending" hidden aria-label="Actions en attente d'envoi : toucher pour réessayer"><svg class="ic"><use href="#i-cloud"/></svg><span id="pending-n">0</span></button>
+    <button id="chat-btn" hidden aria-label="Poser une question sur le vin ou sur ta cave"><svg class="ic"><use href="#i-chat"/></svg></button>
     <button id="refresh" aria-label="Actualiser"><svg class="ic"><use href="#i-refresh"/></svg></button>
     <button id="settings" aria-label="Réglages"><svg class="ic"><use href="#i-gear"/></svg></button>
   </div>
@@ -454,6 +485,19 @@ header .acts #pending .ic{width:18px;height:18px}
   <button data-v="stats"><svg class="ic"><use href="#i-chart"/></svg>Stats</button>
 </nav>
 
+<button id="chat-fab" class="chat-fab" hidden aria-label="Poser une question sur le vin ou sur ta cave"><svg class="ic"><use href="#i-chat"/></svg></button>
+<div id="chat" class="chat" hidden role="dialog" aria-label="Poser une question">
+  <div class="chat-top">
+    <button type="button" class="chat-x" id="chat-close" aria-label="Fermer"><svg class="ic"><use href="#i-back"/></svg></button>
+    <div class="chat-t"><b>Poser une question</b><small>Sur le vin ou sur ta cave</small></div>
+    <button type="button" class="chat-new" id="chat-new" hidden>Nouvelle</button>
+  </div>
+  <div class="chat-log" id="chat-log"></div>
+  <form class="chat-f" id="chat-f" autocomplete="off">
+    <textarea id="chat-in" rows="1" placeholder="Ta question…" aria-label="Ta question"></textarea>
+    <button class="icbtn" type="submit" aria-label="Envoyer la question"><svg class="ic"><use href="#i-send"/></svg></button>
+  </form>
+</div>
 <div id="sheet" class="sheet" hidden><div class="sheet-bg"></div><div class="sheet-panel" id="sheet-panel"></div></div>
 <div id="toast" role="status"></div>
 <div id="crop" class="crop" hidden role="dialog" aria-label="Recadrer l'étiquette">
@@ -488,7 +532,7 @@ async function call(cfg, action, args) {
   return j.data;
 }
 const run = (action, ...args) => call(CFG, action, args);
-const APP_VERSION = '22 nov. 2026 · 2';
+const APP_VERSION = '25 nov. 2026 · 1';
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
 const keyOf = b => [b.zone, b.cote, b.couleur, b.domaine, b.appellation, b.cuvee, b.millesime].join('|');
@@ -525,7 +569,7 @@ async function load() {
   else $('#loading').hidden = false;
   try {
     if (QUEUE.length) await sync(true); // sinon la version du serveur effacerait les actions pas encore envoyées
-    if (!QUEUE.length) { setData(await run('getData')); if (cached) toast('À jour'); probeUndoDrink(); probeReadLabel(); probeAsk(); probeEditTasting(); }
+    if (!QUEUE.length) { setData(await run('getData')); if (cached) toast('À jour'); probeUndoDrink(); probeReadLabel(); probeAsk(); probeEditTasting(); probeAskCave(); }
     else toast(`Hors connexion · ${plural(QUEUE.length, 'action')} en attente`);
   } catch (e) { e.net && cached ? toast('Hors connexion · dernière version enregistrée') : fail(e); }
   $('#loading').hidden = true;
@@ -1223,6 +1267,90 @@ async function askQuestion(w, question, kind, lib) {
   }
 }
 
+/* ---------- Bulle « Poser une question » : le vin en général et toute la cave ---------- */
+// Le script sait-il répondre sur la cave (action « askCave ») ? Sonde sans effet : aucune question envoyée.
+let CAN_ASK_CAVE = store.get('cave-ask-cave') === true;
+// Emplacement du bouton : en-tête (par défaut) ou flottant
+let CHAT_PLACE = store.get('cave-chat-place') === 'fab' ? 'fab' : 'head';
+function showChatBtn() {
+  $('#chat-btn').hidden = !(CAN_ASK_CAVE && CHAT_PLACE === 'head');
+  $('#chat-fab').hidden = !(CAN_ASK_CAVE && CHAT_PLACE === 'fab');
+  document.body.classList.toggle('with-fab', CAN_ASK_CAVE && CHAT_PLACE === 'fab');
+}
+async function probeAskCave() {
+  if (CAN_ASK_CAVE) return showChatBtn();
+  try { await run('askCave', null); CAN_ASK_CAVE = true; }
+  catch (e) { if (e.net) return; CAN_ASK_CAVE = !/Action inconnue/i.test(e.message); }
+  store.set('cave-ask-cave', CAN_ASK_CAVE); showChatBtn();
+}
+const CHAT = [];   // la conversation en cours : [{ q, a, html }]
+let CHAT_SEQ = 0;  // une conversation effacée ne reçoit plus les réponses en retard
+const CHAT_SUGG = [
+  ['glass', 'Que boire avec un plat ?', 'Dis-moi ce que tu cuisines', 'J\'ai au menu : … Que me conseilles-tu dans ma cave ?', true],
+  ['clock', 'Quoi ouvrir en priorité ?', 'Les vins à leur apogée ou qui risquent de décliner', 'Quelles bouteilles de ma cave devrais-je ouvrir en priorité, parce qu\'elles sont à leur apogée ou risquent de commencer à décliner ?'],
+  ['chart', 'Le portrait de ma cave', 'Ses points forts et ses déséquilibres', 'Fais-moi un portrait rapide de ma cave : ses points forts, ses déséquilibres (couleurs, régions, âges), et ce qu\'elle dit de mes goûts d\'après mes dégustations.'],
+  ['cart', 'Que lui manque-t-il ?', 'Des idées d\'achats pour l\'équilibrer', 'Que manque-t-il à ma cave pour qu\'elle soit plus équilibrée et plus variée ? Propose quelques idées d\'achats précis, en tenant compte de mes goûts.']
+];
+const chatOpen = () => !$('#chat').hidden;
+function openChat() {
+  $('#chat').hidden = false; renderChat(); syncBack();
+  if (!CHAT.length) $('#chat-log').scrollTop = 0;
+}
+function closeChat() { $('#chat-in').blur(); $('#chat').hidden = true; syncBack(); }
+function renderChat() {
+  const log = $('#chat-log');
+  $('#chat-new').hidden = !CHAT.length;
+  log.innerHTML = CHAT.length ? CHAT.map(m => m.html).join('') : `<div class="chat-hello">${icon('chat')}<b>Une question ?</b>Sur un vin, un accord, ou sur ta cave : je connais tout ce que tu as en stock et tes dégustations.</div>
+    <div class="chat-sugg">${CHAT_SUGG.map(([ic, t, sub], i) => `<button type="button" data-i="${i}">${icon(ic)}<span><b>${t}</b><small>${sub}</small></span></button>`).join('')}</div>`;
+  log.scrollTop = log.scrollHeight;
+}
+// Les bouteilles conseillées, retrouvées dans la cave telle que l'app la connaît (une bouteille bue entre-temps n'apparaît pas)
+function recoCards(vins) {
+  const ws = wines(), same = (a, b) => ['domaine', 'appellation', 'cuvee', 'millesime'].every(k => norm(a[k]) === norm(b[k]));
+  const cards = (vins || []).map(v => { const w = ws.find(w => same(w, v)); return w ? wineCardHtml(w, v.pourquoi || placeLine(w)) : ''; }).join('');
+  return cards ? `<div class="recos">${cards}</div>` : '';
+}
+const placeLine = w => w.locs.map(l => placeName(l)).join(', ');
+async function chatAsk(q) {
+  q = q.trim(); if (!q) return;
+  const seq = CHAT_SEQ, history = CHAT.filter(m => m.a).slice(-4).map(m => ({ q: m.q, a: m.a }));
+  const m = { q, a: '', html: '' };
+  const me = `<div class="msg-me">${esc(q)}</div>`;
+  m.html = me + `<div class="bubble"><div class="wait"><span class="spin"></span>Réflexion en cours…</div></div>`;
+  CHAT.push(m); renderChat();
+  try {
+    const r = await run('askCave', q, history);
+    if (seq !== CHAT_SEQ) return;
+    m.a = r.texte;
+    m.html = me + `<div class="bubble"><div class="a">${fmtAnswer(r.texte)}</div>${recoCards(r.vins)}<div class="meta">Réponse générée automatiquement, à prendre comme un conseil.</div></div>`;
+  } catch (e) {
+    if (seq !== CHAT_SEQ) return;
+    m.html = me + `<div class="bubble"><div class="a">${e.net ? 'Pas de réseau : réponse impossible pour le moment. Réessaye plus tard.' : 'Réponse impossible pour le moment. Réessaye plus tard.'}</div>
+      <button type="button" class="retry" data-retry="${CHAT.indexOf(m)}">${icon('refresh')}Réessayer</button></div>`;
+  }
+  if (chatOpen()) renderChat();
+}
+$('#chat-btn').onclick = openChat;
+$('#chat-fab').onclick = openChat;
+$('#chat-close').onclick = closeChat;
+$('#chat-new').onclick = () => { CHAT.length = 0; CHAT_SEQ++; renderChat(); };
+$('#chat-log').onclick = e => {
+  const s = e.target.closest('.chat-sugg button');
+  if (s) {
+    const [, , , q, toFill] = CHAT_SUGG[+s.dataset.i];
+    if (!toFill) return chatAsk(q);
+    // à compléter : on place le curseur sur les « … »
+    const inp = $('#chat-in'); inp.value = q; inp.focus(); const i = q.indexOf('…'); inp.setSelectionRange(i, i + 1); grow(); return;
+  }
+  const rt = e.target.closest('[data-retry]');
+  if (rt) { const m = CHAT[+rt.dataset.retry]; if (m) { CHAT.splice(CHAT.indexOf(m), 1); chatAsk(m.q); } return; }
+  const c = e.target.closest('.card[data-w]'); if (c) showWine(c.dataset.w);
+};
+const grow = () => { const t = $('#chat-in'); t.style.height = 'auto'; t.style.height = Math.min(t.scrollHeight, 120) + 'px'; };
+$('#chat-in').oninput = grow;
+$('#chat-in').onkeydown = e => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && matchMedia('(pointer:fine)').matches) { e.preventDefault(); $('#chat-f').requestSubmit(); } };
+$('#chat-f').onsubmit = e => { e.preventDefault(); const t = $('#chat-in'), q = t.value; if (!q.trim() || q.includes('…')) { if (q.includes('…')) toast('Complète d\'abord les « … »'); return; } t.value = ''; grow(); chatAsk(q); };
+
 /* ---------- Menu « Ajouter une bouteille » (bouton + et « Ajouter une bouteille ici ») ---------- */
 // prefill : emplacement déjà choisi (depuis une zone), sinon null
 function openAddMenu(prefill) {
@@ -1546,7 +1674,7 @@ const sheetOpen = () => !$('#sheet').hidden && $('#sheet').classList.contains('o
 const currentView = () => ['cave', 'zones', 'add', 'bues', 'stats'].find(k => !$('#v-' + k).hidden) || 'cave';
 function atRoot() {
   if (!$('#setup').hidden && !CFG) return true; // première connexion : le geste retour peut quitter l'app
-  return $('#crop').hidden && !sheetOpen() && $('#setup').hidden && currentView() === 'cave';
+  return $('#crop').hidden && !sheetOpen() && !chatOpen() && $('#setup').hidden && currentView() === 'cave';
 }
 // Évalué une seule fois après chaque action complète (une action enchaîne souvent plusieurs changements)
 let SYNC_T = 0;
@@ -1563,6 +1691,7 @@ function stepBack() {
     const b = $('#sheet-panel').querySelector('#pk-back, #mv-back, #ed-back, #d-back');
     return b ? b.click() : closeSheet();
   }
+  if (chatOpen()) return closeChat();
   if (!$('#setup').hidden) return CFG ? hideSetup() : undefined;
   // une zone ouverte ne compte que si l'onglet Zones est affiché (elle reste mémorisée quand on change d'onglet)
   if (ZSEL && currentView() === 'zones') return closeZone();
@@ -1588,7 +1717,7 @@ $('#cave-list').onclick = e => { const c = e.target.closest('.card'); if (c) sho
 $('.sheet-bg').onclick = closeSheet;
 $('#refresh').onclick = load;
 $('#pending').onclick = () => sync();
-saveQueue();
+saveQueue(); showChatBtn();
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
 showPhotoBox(); // affiche le bouton photo tout de suite si le script le permet déjà
