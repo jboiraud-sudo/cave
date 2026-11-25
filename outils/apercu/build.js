@@ -41,7 +41,7 @@ nav{left:50%;right:auto;transform:translateX(-50%);width:100%;max-width:430px}
 `;
 
 body = body.replace('</header>', `</header>
-<div class="preview-bar"><span><b>Aperçu</b> · ta cave au ${snap.date}. Ici, rien n'est enregistré dans ta feuille.</span><span class="pv-btns"><button id="preview-chat" type="button">Bulle : en-tête</button><button id="preview-net" type="button" aria-pressed="false">Couper le réseau</button><button id="preview-reset" type="button">Réinitialiser</button></span></div>`);
+<div class="preview-bar"><span><b>Aperçu</b> · ta cave au ${snap.date}. Ici, rien n'est enregistré dans ta feuille.</span><span class="pv-btns"><button id="preview-net" type="button" aria-pressed="false">Couper le réseau</button><button id="preview-reset" type="button">Réinitialiser</button></span></div>`);
 
 body = body.replace("let CFG = store.get('cave-cfg');", "let CFG = { url: 'apercu', key: 'apercu' };");
 body = body.replace(/async function call\(cfg, action, args\) \{[\s\S]*?\n\}\nconst run =/, `
@@ -177,11 +177,6 @@ $('#preview-net').onclick = e => {
   e.currentTarget.classList.toggle('on', window.__offline);
   toast(window.__offline ? 'Réseau coupé (simulation)' : 'Réseau rétabli');
   if (!window.__offline) window.dispatchEvent(new Event('online'));
-};
-$('#preview-chat').onclick = e => {
-  CHAT_PLACE = CHAT_PLACE === 'head' ? 'fab' : 'head'; showChatBtn();
-  e.currentTarget.textContent = CHAT_PLACE === 'head' ? 'Bulle : en-tête' : 'Bulle : flottante';
-  toast(CHAT_PLACE === 'head' ? 'Bulle dans l\u2019en-tête, à côté d\u2019Actualiser' : 'Bulle flottante, en bas à droite');
 };
 $('#preview-reset').onclick = () => { DB = JSON.parse(JSON.stringify(SNAP)); QUEUE = []; saveQueue(); setData(API.getData()); closeSheet(); renderAdd(); toast('Aperçu réinitialisé'); };
 load();`);
